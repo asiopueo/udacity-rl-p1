@@ -10,9 +10,11 @@ from keras.utils import np_utils, to_categorical # ???
 
 
 
-def model_simple():
+def network_simple():
     model = Sequential()
     # The imput layer consists of 37 neurons (35 rays + 2 velocity)
+    # The angles are emanated as follows:
+    # [,,,,,,]
     model.add( Dense(37) )
     model.add( Dense(64) )
     model.add( Dense(64) )
@@ -22,7 +24,7 @@ def model_simple():
     return model
 
 
-def model_pixel():
+def network_pixel():
     model = Sequential()
 
     model.add( Convolution2D(32, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' )
