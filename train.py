@@ -8,7 +8,7 @@ brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
 
-from Model import Agent
+from Agent import Agent
 
 # Initialize the agent:
 agent = Agent()
@@ -24,8 +24,10 @@ score = 0                                          # initialize the score
 time = 0
 action = 0  # Initial action: Move forward
 
+
 while True:
     action = agent.action(state)
+    print('Action taken: ', action)
 
     env_info = env.step(action)[brain_name]
     reward = env_info.rewards[0]
