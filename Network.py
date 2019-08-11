@@ -2,11 +2,11 @@ import numpy as np
 
 from keras.models import Sequential
 from keras.layers import MaxPooling2D, Flatten, BatchNormalization
-from keras.layers.core import Dense, Dropout
+from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.convolutional import Convolution2D
 from keras.optimizers import adam
 from keras.utils import np_utils, to_categorical # ???
-
+from keras import losses
 
 
 
@@ -15,15 +15,26 @@ def network_simple():
     # The imput layer consists of 37 neurons (35 rays + 2 velocity)
     # The angles are emanated as follows:
     # [,,,,,,]
-    model.add( Dense(37) )
-    model.add( Dense(64) )
-    model.add( Dense(64) )
-    model.add( Dense(4) )
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.add( Dense(37, input_shape=(37,) ) )
+    model.add( Activation('relu') )
+    model.add( Dropout(0.2) )
+    model.add( Dense(64) )
+    model.add( Activation('relu') )
+    model.add( Dropout(0.2) )
+    model.add( Dense(64) )
+    model.add( Activation('relu') )
+    model.add( Dropout(0.2) )
+    model.add( Dense(4) )
+    model.add( Activation('softmax') )
+
+    model.compile(loss=losses.mean_squared_error, optimizer='sgd')
     return model
 
 
+
+
+"""
 def network_pixel():
     model = Sequential()
 
@@ -42,3 +53,4 @@ def network_pixel():
 
     model.compile(loss='categorical_crossentropy', optimizer='adam')
     return model
+"""
