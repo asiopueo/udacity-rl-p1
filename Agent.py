@@ -40,10 +40,13 @@ class Agent():
     # Let the agent learn from experience
     def learn(self):
         # Retrieve batch of experiences from the replay buffer
-        batch = self.memory.sample_from_buffer()
+        state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.memory.sample_from_buffer()
 
         # Calculate the next q-value according to SARSA-MAX
-        Q_next = np.argmax( self.target_net.predict(state.reshape(1,-1)) )
+        # TODO: calculate a complete batch
+        # Single prediction: .reshape(1,-1)
+        # Batch prediction: .reshape(BATCH_SIZE, -1)
+        Q_next = np.argmax( self.target_net.predict(state_batch, axis=1)
         # Target:
         Q_target = reward + GAMMA * Q_next
 
@@ -51,7 +54,8 @@ class Agent():
         Q_local = self.local_net.predict( state.reshape(1,-1) )
 
         # The loss function is given by
-        self.local_net.fit(Q_local, Q_target)
+        self.local_net.fit(Q_local, Q_target, batch_size=BATCH_SIZE, epochs=1, shuffle=False, verbose=1)
+        # Not sure if we can include this:
         loss = self.local_net.evaluate()
 
 
@@ -69,9 +73,10 @@ class Agent():
 
     # Copy weights from short-term model to long-term model
     def update_long_net(self, tau=1.0):
-        # Implement soft update for later
-        self.long_net.set_weights( self.short_net.set_weights() )
-
+        # Implement soft update for later:
+        # get_weights()[0] -- weights
+        # get weights()[1] -- bias (if existent)
+        self.long_net.set_weights( tau*self.short_net.get_weights() + (1-tau)*self.target_net.get_weights() )
 
 
 
