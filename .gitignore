@@ -1,5 +1,7 @@
 Banana_Linux/
 *.ipynb_checkpoints/
-__pychache__/
+__pycache__/
 *.log
 *.log.swp
+
+network.py
