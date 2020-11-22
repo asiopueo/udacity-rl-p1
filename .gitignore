@@ -1,6 +1,7 @@
 Banana_Linux/
 *.ipynb_checkpoints/
 __pycache__/
+.vscode/
 *.log
 *.log.swp
 
