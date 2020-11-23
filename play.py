@@ -12,7 +12,11 @@ from Agent import Agent
 from collections import namedtuple
 
 # Initialize the agent:
-agent = Agent()
+BUFFER_SIZE = 1000
+BATCH_SIZE = 10
+GAMMA = 0.98
+
+agent = Agent(buffer_size=BUFFER_SIZE, batch_size=BATCH_SIZE, gamma=GAMMA)
 
 # Reset the environment
 env_info = env.reset(train_mode=False)[brain_name]
@@ -52,8 +56,8 @@ def play_one_turn():
 
     # If buffer is sufficiently full, let the agent learn from his experience:
     if agent.replay_buffer.buffer_usage():
-        #agent.learn()
-        pass
+        agent.learn()
+        #pass
 
     score += reward
     state = next_state

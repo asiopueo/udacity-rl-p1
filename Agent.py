@@ -18,16 +18,19 @@ import Network
 # Ex. [0,0,1,1,0,0.34] means there is
 # The last 2 numbers are the left/right turning velocity v_yaw and the forward/backward velocity v_lat of the agent: [v_yaw, v_lat]
 
-BUFFER_SIZE = 1000
-BATCH_SIZE = 10
-GAMMA = 0.98
 
-assert BATCH_SIZE < BUFFER_SIZE
 
 
 
 class Agent():
-    def __init__(self):
+    def __init__(self, buffer_size, batch_size, gamma):
+        if not batch_size < buffer_size:
+            raise Exception()
+
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
+        self.gamma = gamma
+
         # Initialize replay buffer
         self.replay_buffer = ReplayBuffer()
         # Seed the random number generator
@@ -45,17 +48,33 @@ class Agent():
         # TODO: calculate a complete batch
         # Single prediction: .reshape(1,-1)
         # Batch prediction: .reshape(BATCH_SIZE, -1)
-        Q_next = np.argmax( self.target_net.predict(state_batch, axis=1) )
-        # Target:
-        Q_target = reward + GAMMA * Q_next
+        #Q_next = np.argmax( self.target_net.predict(state_batch.reshape(BATCH_SIZE, -1)) )
+
+        print(state_batch.shape)
+        print(action_batch.shape)
+        print(reward_batch.shape)
+        print(next_state_batch.shape)
+        print(done_batch.shape)
+        
+        #Q_local = self.local_net.predict( state_batch )
+        
+        Q_next_state = np.max( self.target_net.predict(next_state_batch) )
+        Q_target = reward_batch + self.gamme * Q_next_state
+
+        print(Q_next_state.shape)
+        print(Q_target.shape)
 
         # Error: Look into Network.py for choice of loss function
-        Q_local = self.local_net.predict( state_batch )
-
+        #Q_local = self.local_net.predict( state_batch )
+        
         # The loss function is given by
-        self.local_net.fit(Q_local, Q_target, batch_size=BATCH_SIZE, epochs=1, shuffle=False, verbose=1)
+        self.local_net.fit(state_batch, Q_target, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
         # Not sure if we can include this:
-        loss = self.local_net.evaluate()
+        #loss = self.local_net.evaluate()
+
+        # Update weights by using the semi-gradient method:
+        
+        #self.local_net.set_weights()
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.9):
@@ -73,13 +92,14 @@ class Agent():
         # Implement soft update for later:
         # get_weights()[0] -- weights
         # get weights()[1] -- bias (if existent)
+        # Soft-update:
         self.target_net.set_weights( tau*self.local_net.get_weights() + (1-tau)*self.target_net.get_weights() )
 
 
 
 class ReplayBuffer():
     def __init__(self):
-        self.replay_buffer = deque(maxlen=BUFFER_SIZE)
+        self.replay_buffer = deque(maxlen=self.buffer_size)
 
     # Insert experience into memory
     def insert_into_buffer(self, experience):
@@ -88,18 +108,18 @@ class ReplayBuffer():
     # Randomly sample memory
     def sample_from_buffer(self):
         # Sample experience batch from experience buffer
-        batch = random.sample(self.replay_buffer, BATCH_SIZE)
+        batch = random.sample(self.replay_buffer, self.batch_size)
 
         # Reorder experience batch such that we have a batch of states, a batch of actions, a batch of rewards, etc.
         # Eventually add 'if exp is not None'
         state = np.vstack( [exp.state for exp in batch] )
         action = np.vstack( [exp.action for exp in batch] )
         reward = np.vstack( [exp.reward for exp in batch] )
-        state_next = np.vstack( [exp.state_next for exp in batch] )
+        state_next = np.vstack( [exp.next_state for exp in batch] )
         done = np.vstack( [exp.done for exp in batch] )
 
-        return (state, action, reward, state_next, done)
+        return state, action, reward, state_next, done
 
     # Get length of memory
     def buffer_usage(self):
-        return len(self.replay_buffer)
+        return len(self.replay_buffer) > batch_size
