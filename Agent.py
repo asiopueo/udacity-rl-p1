@@ -88,7 +88,7 @@ class ReplayBuffer():
     # Randomly sample memory
     def sample_from_buffer(self):
         # Sample experience batch from experience buffer
-        batch = random.sample(self.buffer, BATCH_SIZE)
+        batch = random.sample(self.replay_buffer, BATCH_SIZE)
 
         # Reorder experience batch such that we have a batch of states, a batch of actions, a batch of rewards, etc.
         # Eventually add 'if exp is not None'
