@@ -79,11 +79,11 @@ class Agent():
 
 class ReplayBuffer():
     def __init__(self):
-        self.buffer = deque(maxlen=BUFFER_SIZE)
+        self.replay_buffer = deque(maxlen=BUFFER_SIZE)
 
     # Insert experience into memory
     def insert_into_buffer(self, experience):
-        self.buffer.append(experience)
+        self.replay_buffer.append(experience)
 
     # Randomly sample memory
     def sample_from_buffer(self):
@@ -102,4 +102,4 @@ class ReplayBuffer():
 
     # Get length of memory
     def buffer_usage(self):
-        return len(self.buffer)
+        return len(self.replay_buffer)
