@@ -34,7 +34,7 @@ time = 0
 #   Play one episode:
 #################################
 def play_one_turn():
-    global score, time
+    global score, time, state
 
     # Select action according to policy:
     action = np.random.randint(action_size)    
@@ -47,8 +47,8 @@ def play_one_turn():
     done = env_info.local_done[0] # Not really relevant in this experiment as it runs 300 turns anyway
 
     # Add experience to the agent's replay buffer:
-    #exp = Experience(state, action, reward, next_state, done)
-    #agent.replay_buffer.insert_into_buffer( exp )
+    exp = Experience(state, action, reward, next_state, done)
+    agent.replay_buffer.insert_into_buffer( exp )
 
     # If buffer is sufficiently full, let the agent learn from his experience:
     if agent.replay_buffer.buffer_usage():
@@ -67,6 +67,7 @@ while True:
         print("[Time: {}] Score".format(time))
     elif time%10 == 0:
         print("[Time: {}] Time to update the target net.".format(time))
+        print("Buffer usage: {}".format(agent.replay_buffer.buffer_usage()))
         #agent.update_target_net()
 
     time += 1
