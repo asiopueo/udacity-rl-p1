@@ -9,6 +9,7 @@ brain = env.brains[brain_name]
 
 
 from Agent import Agent
+from collections import namedtuple
 
 # Initialize the agent:
 agent = Agent()
@@ -17,6 +18,8 @@ agent = Agent()
 env_info = env.reset(train_mode=False)[brain_name]
 
 
+# Define named tuple 'Experience'; you can use a dictionary alternatively
+Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
 
 # Initial values:
 state = env_info.vector_observations[0]   # get the current state
@@ -24,46 +27,47 @@ score = 0   # Score is NOT the discounted reward but the final 'Banana Score' of
 time = 0
 action = 0  # Initial action: Move forward
 
+
 #################################
-#   Play episodes:
+#   Play one episode:
 #################################
-for i in range(100)
-    # Select action according to policy:
-    action = agent.action(state)
-    print('Action taken: ', action)
+def play_episode():
+    while True:
+        # Select action according to policy:
+        action = agent.action(state)
+        print('Action taken: ', action)
 
-    # Take action and record the reward and the successive state
-    env_info = env.step(action)[brain_name]
-    reward = env_info.rewards[0]
-    next_state = env_info.vector_observations[0]
-    done = env_info.local_done[0]
+        # Take action and record the reward and the successive state
+        env_info = env.step(action)[brain_name]
+        reward = env_info.rewards[0]
+        next_state = env_info.vector_observations[0]
+        done = env_info.local_done[0]
 
-    # Add experience to the agent's replay buffer:
-    experience = (state,action,reward,next_state,done)
-    agent.add( experience )
+        # Add experience to the agent's replay buffer:
+        exp = Experience(state, action, reward, next_state, done)
+        agent.replay_buffer.insert_into_buffer( exp )
 
-    # If buffer is suffieicently full, let the agent learn from his experience:
-    if agent.memory.length():
-        agent.learn()
+        # If buffer is suffieicently full, let the agent learn from his experience:
+        if agent.replay_buffer.buffer_usage():
+            agent.learn()
 
-    score += reward
-    state = next_state
+        score += reward
+        state = next_state
 
+        if done:
+            break
+
+
+
+for i in range(100):
+    play_episode()
     if time%10 == 0:
         pass
         #agent.update_long_net()
-
     if time%50 == 0:
         print("Time: {}".format(time))
-
     time += 1
 
-    if done:
-        break
 
-
-
-print("Score: {}".format(score))
-
-
+print("Final score: {}".format(score))
 env.close()

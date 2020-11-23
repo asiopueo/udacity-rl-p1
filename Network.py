@@ -1,18 +1,19 @@
 import numpy as np
 
+import tensorflow as tf
+
 from keras.models import Sequential
 from keras.layers import MaxPooling2D, Flatten, BatchNormalization
-from keras.layers.core import Dense, Dropout, Activation
+from keras.layers import Dense, Dropout, Activation
 from keras.layers.convolutional import Convolution2D
-from keras.optimizers import adam
-from keras.utils import np_utils, to_categorical # ???
-from keras import losses
-
+from keras.optimizers import Adam
+#from tf.keras.utils import np_utils, to_categorical # ???
+import tensorflow.keras.losses as losses
 
 
 def network_simple():
     model = Sequential()
-    # The imput layer consists of 37 neurons (35 rays + 2 velocity)
+    # The input layer consists of 37 neurons (35 rays + 2 velocity)
     # The angles are emanated as follows:
     # [,,,,,,]
 
