@@ -12,7 +12,7 @@ from Agent import Agent
 from collections import namedtuple
 
 # Initialize the agent:
-agent = Agent(buffer_size=1000, batch_size=10, gamma=0.98)
+agent = Agent(buffer_size=1000, batch_size=20, gamma=0.98)
 
 # Reset the environment
 env_info = env.reset(train_mode=False)[brain_name]
@@ -34,14 +34,19 @@ time = 0
 #   Play one episode:
 #################################
 def play_one_turn():
-    global score, time, state
+    global score, time, state, env_info
 
     # Select action according to policy:
     action = np.random.randint(action_size)    
     print('Action taken: ', action, 'Time: ', time)
 
     # Take action and record the reward and the successive state
-    env_info = env.step(action)[brain_name]
+    try:
+        env_info = env.step(action)[brain_name]
+    except:
+        print("Final score: {}".format(score))
+        env.close()
+
     reward = env_info.rewards[0]
     next_state = env_info.vector_observations[0]
     done = env_info.local_done[0] # Not really relevant in this experiment as it runs 300 turns anyway
@@ -53,7 +58,6 @@ def play_one_turn():
     # If buffer is sufficiently full, let the agent learn from his experience:
     if agent.replay_buffer.buffer_usage():
         agent.learn()
-        #pass
 
     score += reward
     state = next_state
@@ -73,5 +77,4 @@ while True:
     time += 1
 
 
-print("Final score: {}".format(score))
-env.close()
+
