@@ -1,6 +1,10 @@
 import numpy as np
 
+import os
+os.environ['KMP_WARNINGS'] = 'FALSE'
 import tensorflow as tf
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
+tf.compat.v1.logging.set_verbosity(tf.logging.ERROR)
 
 from keras.models import Sequential
 from keras.layers import MaxPooling2D, Flatten, BatchNormalization
