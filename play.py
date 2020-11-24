@@ -12,11 +12,7 @@ from Agent import Agent
 from collections import namedtuple
 
 # Initialize the agent:
-BUFFER_SIZE = 1000
-BATCH_SIZE = 10
-GAMMA = 0.98
-
-agent = Agent(buffer_size=BUFFER_SIZE, batch_size=BATCH_SIZE, gamma=GAMMA)
+agent = Agent(buffer_size=1000, batch_size=10, gamma=0.98)
 
 # Reset the environment
 env_info = env.reset(train_mode=False)[brain_name]
