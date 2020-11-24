@@ -32,7 +32,7 @@ class Agent():
         self.gamma = gamma
 
         # Initialize replay buffer
-        self.replay_buffer = ReplayBuffer()
+        self.replay_buffer = ReplayBuffer(buffer_size, batch_size)
         # Seed the random number generator
         random.seed()
         # QNetwork - We choose the simple network
@@ -41,34 +41,44 @@ class Agent():
 
     # Let the agent learn from experience
     def learn(self):
-        # Retrieve batch of experiences from the replay buffer
+        # Retrieve batch of experiences from the replay buffer:
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.replay_buffer.sample_from_buffer()
+        # Prepare the target. Note that Q_target[:,action] will need to be assigned the 'true' learning target.
+        Q_target = self.local_net.predict( state_batch )
+        Q_next_state = np.max( self.target_net.predict(next_state_batch), axis=1 )
 
-        # Calculate the next q-value according to SARSA-MAX
-        # TODO: calculate a complete batch
-        # Single prediction: .reshape(1,-1)
-        # Batch prediction: .reshape(BATCH_SIZE, -1)
-        #Q_next = np.argmax( self.target_net.predict(state_batch.reshape(BATCH_SIZE, -1)) )
+        print( Q_target.shape )
+        print( Q_next_state.shape )
 
-        print(state_batch.shape)
-        print(action_batch.shape)
-        print(reward_batch.shape)
-        print(next_state_batch.shape)
-        print(done_batch.shape)
-        
-        #Q_local = self.local_net.predict( state_batch )
-        
-        Q_next_state = np.max( self.target_net.predict(next_state_batch) )
-        Q_target = reward_batch + self.gamme * Q_next_state
+        X = []
+        y = []
 
-        print(Q_next_state.shape)
-        print(Q_target.shape)
+        # Batches need to be prepared before learning
+        for index, state in enumerate(state_batch):    
+            # Calculate the next q-value according to SARSA-MAX   
+            # Q_new w.r.t. action:
+
+            if not done_batch[index]:
+                Q_new = reward_batch[index] + self.gamma * Q_next_state[index]
+            else:
+                Q_new = reward_batch[index]
+
+            Q_target[index, action_batch[index]] = Q_new
+
+            X.append(state)
+            y.append(Q_target[index])
+
+        X_np = np.array(X)
+        y_np = np.array(y)
+
+        print("X_np.shape: ", X_np.shape)
+        print("y_np.shape: ", y_np.shape)
 
         # Error: Look into Network.py for choice of loss function
         #Q_local = self.local_net.predict( state_batch )
         
         # The loss function is given by
-        self.local_net.fit(state_batch, Q_target, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
+        self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
         # Not sure if we can include this:
         #loss = self.local_net.evaluate()
 
@@ -98,7 +108,9 @@ class Agent():
 
 
 class ReplayBuffer():
-    def __init__(self):
+    def __init__(self, buffer_size, batch_size):
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
         self.replay_buffer = deque(maxlen=self.buffer_size)
 
     # Insert experience into memory
@@ -122,4 +134,4 @@ class ReplayBuffer():
 
     # Get length of memory
     def buffer_usage(self):
-        return len(self.replay_buffer) > batch_size
+        return len(self.replay_buffer) > self.batch_size
