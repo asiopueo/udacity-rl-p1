@@ -47,9 +47,6 @@ class Agent():
         Q_target = self.local_net.predict( state_batch )
         Q_next_state = np.max( self.target_net.predict(next_state_batch), axis=1 )
 
-        print( Q_target.shape )
-        print( Q_next_state.shape )
-
         X = []
         y = []
 
@@ -57,7 +54,6 @@ class Agent():
         for index, state in enumerate(state_batch):    
             # Calculate the next q-value according to SARSA-MAX   
             # Q_new w.r.t. action:
-
             if not done_batch[index]:
                 Q_new = reward_batch[index] + self.gamma * Q_next_state[index]
             else:
@@ -74,31 +70,23 @@ class Agent():
         print("X_np.shape: ", X_np.shape)
         print("y_np.shape: ", y_np.shape)
 
-        # Error: Look into Network.py for choice of loss function
-        #Q_local = self.local_net.predict( state_batch )
-        
-        # The loss function is given by
         self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
-        # Not sure if we can include this:
-        #loss = self.local_net.evaluate()
 
-        # Update weights by using the semi-gradient method:
-        
-        #self.local_net.set_weights()
+
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.9):
-        '''if random.random() > epsilon:
+        if random.random() > epsilon:
             return random.randrange(0,4)
         else:
             return self.local_net(state)
-        '''
+        
         prob_distribution = self.local_net.predict(state.reshape(1,-1))
         action = np.argmax(prob_distribution)
         return action
 
     # Copy weights from short-term model to long-term model
-    def update_target_net(self, tau=1.0):
+    def update_target_net(self, tau=0.1):
         # Implement soft update for later:
         # get_weights()[0] -- weights
         # get weights()[1] -- bias (if existent)
