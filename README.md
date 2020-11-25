@@ -4,6 +4,87 @@
 
 # Project 1: Navigation
 
+## Structure of the Project
+
+Aside from the Jupyter-Notebook-file `Navigation.ipynb` the project consists of the following support files:
+
+1. `play.py`: Scripting and basic gaming routine
+2. `train.py`: Training script for the agent
+3. `Agent.py`: Agent class
+4. `Network.py`: Contains the definition of the ANN
+5. `ReplayBuffer.py`: Replay buffer class
+
+Both `play.py` and `train.py` are not necessary when launching the agent in the Jupyter notebook. However, they are the starting point when controlling the agent from the CLI. Their contents are largely identical with the content in the notebook.
+
+The chosen deep-learning-framework is Keras with *TensorFlow 1.17* backend.
+
+
+The initial development was largely done from the command line with the tuning of the learning parameters mostly done in the Jupyter-notebook.
+
+## Agent Class
+The structure of the Agent class is as follows:
+```
+Agent()
++ action()
++ learn()
++ update_target_net()
+```
+The `action()`-method contains the code for the epsilon-greedy-strategy with epsilon being the parameter $0<\epsilon\ll1$
+The `learn()`-method retrieves a batch of memories from the replay buffer and utilizes an gradient policies algorithm to train the agent.
+
+
+## Replay Buffer Class
+```
+ReplayBuffer()
++ insert_into_buffer()
++ sample_from_buffer()
++ buffer_usage()
+```
+
+
+## Network
+The artificial neural network for the simple problem consists of the following:
+
+
+
+
+## Learning Strategy
+The chosen learning strategy is policy gradient.
+
+
+
+In practice
+
+
+
+After a predetermined cycle, the target network is updated by the `update_target_net()`-method using the parameter $0<\tau<1$:
+
+$w = w + \Delta w$
+
+Written in code, it is as follows:
+
+    self.target_net.set_weights( tau*self.local_net.get_weights() + (1-tau)*self.target_net.get_weights() )
+
+<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### Introduction
 
 For this project, you will train an agent to navigate (and collect bananas!) in a large, square world.  
