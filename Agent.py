@@ -20,8 +20,6 @@ import Network
 
 
 
-
-
 class Agent():
     def __init__(self, buffer_size, batch_size, gamma):
         if not batch_size < buffer_size:
@@ -71,6 +69,8 @@ class Agent():
         print("y_np.shape: ", y_np.shape)
 
         self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
+        
+        self.update_target_net()
 
 
 
@@ -85,7 +85,7 @@ class Agent():
         action = np.argmax(prob_distribution)
         return action
 
-    # Copy weights from short-term model to long-term model
+    # Copy weights from short-term model to long-term model (soft update)
     def update_target_net(self, tau=0.1):
         # Implement soft update for later:
         # get_weights()[0] -- weights
