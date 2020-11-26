@@ -12,7 +12,7 @@ from Agent import Agent
 from collections import namedtuple
 
 # Initialize the agent:
-agent = Agent(buffer_size=1000, batch_size=20, gamma=0.98)
+agent = Agent(buffer_size=1000, batch_size=30, gamma=0.98)
 
 # Reset the environment
 env_info = env.reset(train_mode=False)[brain_name]
@@ -72,7 +72,7 @@ while True:
     elif time%10 == 0:
         print("[Time: {}] Time to update the target net.".format(time))
         print("Buffer usage: {}".format(agent.replay_buffer.buffer_usage()))
-        #agent.update_target_net()
+        agent.update_target_net()
 
     time += 1
 
