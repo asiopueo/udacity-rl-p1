@@ -4,8 +4,10 @@
 
 # Project 1: Navigation
 
-## Structure of the Project
+## Dependencies and Setup
 
+
+## Structure of the Project
 Aside from the Jupyter-Notebook-file `Navigation.ipynb` the project consists of the following support files:
 
 1. `play.py`: Scripting and basic gaming routine
@@ -20,6 +22,32 @@ The chosen deep-learning-framework is Keras with *TensorFlow 1.17* backend.
 
 
 The initial development was largely done from the command line with the tuning of the learning parameters mostly done in the Jupyter-notebook.
+
+
+
+
+## Deep Q-Learning
+
+### Monte-Carlo Learning
+
+$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(G_t - Q_\pi(s,a)\right)$
+
+$G_t$ = total reward for the whole episode
+
+### Temporal-Difference Learning (TD-Learning)
+
+Update equation for the Q-value: 
+
+$Q_\pi(s,a) = Q_\pi(s,a) + \alpha\left( r(s,a) + Q_\pi(s',a') - Q_\pi(s,a)\right)$
+
+SARSA-max:
+
+$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(r(s,a)+\max_{a'} Q_\pi(s',a') - Q_\pi(s,a\right)$
+
+Update equation for the weights:
+
+$w = w + \alpha\left( r(s,a)+\max_{a'} Q_\pi(s',a',w)-Q_\pi(s,a,w)\right) \nabla_w Q_\pi(s,a,w)$
+
 
 ## Agent Class
 The structure of the Agent class is as follows:
@@ -66,17 +94,6 @@ Written in code, it is as follows:
     self.target_net.set_weights( tau*self.local_net.get_weights() + (1-tau)*self.target_net.get_weights() )
 
 <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
-
-
-
-
-
-
-
-
-
-
-
 
 
 
