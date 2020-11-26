@@ -70,8 +70,6 @@ class Agent():
 
         self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
         
-        self.update_target_net()
-
 
 
     # Take action according to epsilon-greedy-policy:
@@ -91,7 +89,9 @@ class Agent():
         # get_weights()[0] -- weights
         # get weights()[1] -- bias (if existent)
         # Soft-update:
-        self.target_net.set_weights( tau*self.local_net.get_weights() + (1-tau)*self.target_net.get_weights() )
+        local_weights = np.array( self.local_net.get_weights() )
+        target_weights = np.array( self.target_net.get_weights() )
+        self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
 
 
 
