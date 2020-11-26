@@ -3,19 +3,22 @@
 [image1]: https://user-images.githubusercontent.com/10624937/42135619-d90f2f28-7d12-11e8-8823-82b970a54d7e.gif "Trained Agent"
 
 # Project 1: Navigation
-For this project, you will train an agent to navigate (and collect bananas!) in a large, square world.  
+This project is about training an agent to navigate and collect bananas in a large, rectangular world.  
 
 ![Trained Agent][image1]
 
-A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is provided for collecting a blue banana.  Thus, the goal of your agent is to collect as many yellow bananas as possible while avoiding blue bananas.  
+There are two types of bananas available for collection: yellow bananas which - upon collection - provide a reward of +1 points, and blue bananas with a negative reward of -1 points. 
+The task is episodic and each episode consists of 300 consecutive steps. In order to succeed, the agent needs an average score of +13 points over 100 consecutive episodes. 
 
-The state space has 37 dimensions and contains the agent's velocity, along with ray-based perception of objects around agent's forward direction.  Given this information, the agent has to learn how to best select actions.  Four discrete actions are available, corresponding to:
+There are four discrete actions available for the agent at each step:
+
 - **`0`** - move forward.
 - **`1`** - move backward.
 - **`2`** - turn left.
 - **`3`** - turn right.
 
-The task is episodic, and in order to solve the environment, your agent must get an average score of +13 over 100 consecutive episodes.
+The state space consists of 37 dimensions and contains the agent's velocity, along with ray-based perception of objects around agent's forward direction.  Given this information, the agent has to learn how to best select actions.  
+
 
 
 ## Dependencies and Setup
@@ -118,6 +121,16 @@ Written in code, it is as follows:
     self.target_net.set_weights( tau*self.local_net.get_weights() + (1-tau)*self.target_net.get_weights() )
 
 <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+
+
+## Deep Q-Learning
+
+There are two important strategies to tackle the instability issues:
+
+* Experience replay
+* Fixed Q-targets
+* Training of a target network
+
 
 
 
