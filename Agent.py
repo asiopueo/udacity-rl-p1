@@ -69,8 +69,6 @@ class Agent():
         print("y_np.shape: ", y_np.shape)
 
         self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
-        
-
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.9):
@@ -82,6 +80,9 @@ class Agent():
         prob_distribution = self.local_net.predict(state.reshape(1,-1))
         action = np.argmax(prob_distribution)
         return action
+
+    def random_action(self):
+        return random.randrange(0,4)
 
     # Copy weights from short-term model to long-term model (soft update)
     def update_target_net(self, tau=0.1):
