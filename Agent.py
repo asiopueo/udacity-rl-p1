@@ -96,6 +96,12 @@ class Agent():
         target_weights = np.array( self.target_net.get_weights() )
         self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
 
+    def load_weights():
+        pass
+
+    def save_weights():
+        pass
+
 
 
 class ReplayBuffer():
