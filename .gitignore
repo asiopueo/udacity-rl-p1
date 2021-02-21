@@ -1,4 +1,5 @@
 Banana_Linux/
+checkpoints/
 *.ipynb_checkpoints/
 __pycache__/
 .vscode/

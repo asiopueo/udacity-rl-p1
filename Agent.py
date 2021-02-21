@@ -98,11 +98,15 @@ class Agent():
         self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
 
     def load_weights(self, path):
-        self.local_net.load_weights(os.path.join(path, "weights_latest.ckpt"))
-        self.target_net.load_weights(os.path.join(path, "weights_latest.ckpt"))
+        filepath = os.path.join(path, "weights_latest.ckpt")
+        print("Loading network weights from", filepath)
+        self.local_net.load_weights(filepath)
+        self.target_net.load_weights(filepath)
 
     def save_weights(self, path):
-        self.target_net.save_weights(os.path.join(path, "weights_latest.ckpt"))
+        filepath = os.path.join(path, "weights_latest.ckpt")
+        print("Saving target network weights to", filepath)
+        self.target_net.save_weights(filepath)
 
 
 
