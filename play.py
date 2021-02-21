@@ -1,7 +1,9 @@
 from unityagents import UnityEnvironment
 import numpy as np
 
-# Initialization of Unity environment
+#################################
+#  Initialization:
+#################################
 env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64")
 # get the default brain
 brain_name = env.brain_names[0]
@@ -11,18 +13,18 @@ brain = env.brains[brain_name]
 from Agent import Agent
 from collections import namedtuple
 
+# Constants:
+action_size = 4
+
 # Initialize the agent:
 agent = Agent(buffer_size=1000, batch_size=30, gamma=0.98)
+
 
 # Reset the environment
 env_info = env.reset(train_mode=False)[brain_name]
 
-
 # Define named tuple 'Experience'; you can use a dictionary alternatively
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
-
-# Constants:
-action_size = 4
 
 # Initial values:
 state = env_info.vector_observations[0]   # get the current state
@@ -30,10 +32,10 @@ score = 0   # Score is NOT the discounted reward but the final 'Banana Score' of
 time = 0
 
 
-#################################
-#   Play one episode:
-#################################
-def play_one_turn():
+####################################
+#  Step-function and Main Loop:
+####################################
+def step():
     global score, time, state, env_info
 
     # Select action according to policy:
@@ -63,16 +65,15 @@ def play_one_turn():
     state = next_state
 
 
-
 while True:
-    play_one_turn()
+    step()
     
-    if time%50 == 0:
-        print("[Time: {}] Score".format(time))
-    elif time%10 == 0:
+    if time%10 == 0:
         print("[Time: {}] Time to update the target net.".format(time))
         print("Buffer usage: {}".format(agent.replay_buffer.buffer_usage()))
-        agent.update_target_net()
+    elif time%50 == 0:
+        print("[Time: {}] Score".format(time))
+        #agent.update_target_net()
 
     time += 1
 
