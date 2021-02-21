@@ -21,12 +21,13 @@ import Network
 
 
 class Agent():
-    def __init__(self, buffer_size, batch_size, gamma):
+    def __init__(self, buffer_size, batch_size, action_size, gamma):
         if not batch_size < buffer_size:
             raise Exception()
 
         self.buffer_size = buffer_size
         self.batch_size = batch_size
+        self.action_size = 4
         self.gamma = gamma
 
         # Initialize replay buffer
@@ -73,7 +74,7 @@ class Agent():
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.9):
         if random.random() > epsilon:
-            return random.randrange(0,4)
+            return random.randrange(0, self.action_size)
         else:
             return self.local_net(state)
         
@@ -82,7 +83,8 @@ class Agent():
         return action
 
     def random_action(self):
-        return random.randrange(0,4)
+        return random.randrange(0, self.action_size)
+        #return np.random.randint(self.action_size)
 
     # Copy weights from short-term model to long-term model (soft update)
     def update_target_net(self, tau=0.1):

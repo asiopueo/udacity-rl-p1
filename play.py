@@ -13,11 +13,9 @@ brain = env.brains[brain_name]
 from Agent import Agent
 from collections import namedtuple
 
-# Constants:
-action_size = 4
 
 # Initialize the agent:
-agent = Agent(buffer_size=1000, batch_size=30, gamma=0.98)
+agent = Agent(buffer_size=1000, batch_size=30, action_size=4, gamma=0.98)
 
 
 # Reset the environment
@@ -39,7 +37,7 @@ def step():
     global score, time, state, env_info
 
     # Select action according to policy:
-    action = np.random.randint(action_size)    
+    action = agent.random_action()    
     print('Action taken: ', action, 'Time: ', time)
 
     # Take action and record the reward and the successive state
