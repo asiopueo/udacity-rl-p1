@@ -67,21 +67,19 @@ class Agent():
         X_np = np.array(X)
         y_np = np.array(y)
 
-        print("X_np.shape: ", X_np.shape)
-        print("y_np.shape: ", y_np.shape)
+        #print("X_np.shape: ", X_np.shape)
+        #print("y_np.shape: ", y_np.shape)
 
-        self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=1)
+        self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.9):
         if random.random() > epsilon:
             return random.randrange(0, self.action_size)
         else:
-            return self.local_net(state)
-        
-        prob_distribution = self.local_net.predict(state.reshape(1,-1))
-        action = np.argmax(prob_distribution)
-        return action
+            prob_distribution = self.local_net.predict(state.reshape(1,-1))
+            action = np.argmax(prob_distribution)
+            return action
 
     def random_action(self):
         return random.randrange(0, self.action_size)
