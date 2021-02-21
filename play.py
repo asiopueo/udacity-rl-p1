@@ -69,9 +69,10 @@ while True:
     if time%10 == 0:
         print("[Time: {}] Time to update the target net.".format(time))
         print("Buffer usage: {}".format(agent.replay_buffer.buffer_usage()))
+        agent.save_weights("./checkpoints")
     elif time%50 == 0:
         print("[Time: {}] Score".format(time))
-        #agent.update_target_net()
+        #agent.update_target_net("./checkpoints")
 
     time += 1
 

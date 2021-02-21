@@ -1,5 +1,6 @@
 from collections import deque
 import random
+import os
 import numpy as np
 from collections import namedtuple
 
@@ -96,11 +97,12 @@ class Agent():
         target_weights = np.array( self.target_net.get_weights() )
         self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
 
-    def load_weights():
-        pass
+    def load_weights(self, path):
+        self.local_net.load_weights(os.path.join(path, "weights_latest.ckpt"))
+        self.target_net.load_weights(os.path.join(path, "weights_latest.ckpt"))
 
-    def save_weights():
-        pass
+    def save_weights(self, path):
+        self.target_net.save_weights(os.path.join(path, "weights_latest.ckpt"))
 
 
 
