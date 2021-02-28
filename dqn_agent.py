@@ -1,5 +1,5 @@
 import numpy as np
-from agent import AbstractAgent
+from abstract_agent import AbstractAgent
 
 #import keras.backend as K
 
