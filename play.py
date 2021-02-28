@@ -4,17 +4,20 @@ import numpy as np
 #################################
 #  Initialization:
 #################################
-env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64")
+env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
 # get the default brain
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
-from Agent import Agent
+from dqn_agent import DQNAgent
+from ddqn_agent import DDQNAgent
 from collections import namedtuple
 
 
 # Initialize the agent:
-agent = Agent(buffer_size=1000, batch_size=30, action_size=4, gamma=0.98)
+#agent = DQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
+# Alternatively, try out the Double-Q-Learning Agent:
+agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
 
 # Define named tuple 'Experience'; you can use a dictionary alternatively
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
@@ -31,9 +34,8 @@ def step():
     global score, time, state, env_info
 
     # Select action according to policy:
-    action = agent.action(state, epsilon=0.9)
-    #action = agent.random_action()
-    print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
+    action = agent.action(state, epsilon=0.99)
+    #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
 
     # Take action and record the reward and the successive state
     try:
@@ -61,9 +63,9 @@ def step():
         
 
 
-agent.load_weights("./checkpoints")
+#agent.load_weights("./checkpoints")
 
-N_episodes = 100
+N_episodes = 500
 
 while episode in range(N_episodes):
     time = 0
@@ -83,12 +85,12 @@ while episode in range(N_episodes):
         if time%10 == 0:
             pass
             #print("[Time: {}] Buffer usage: {}".format(time, agent.replay_buffer.buffer_usage()))
-        elif time%25 == 0:
+        elif time%5 == 0:
             agent.update_target_net()
 
         time += 1
     
-    score_avg = score_avg*episode / (episode+1)
+    score_avg = (score_avg*episode + score) / (episode+1)
 
     print("***********************************************")
     print("Score of episode {}: {}".format(episode, score))
@@ -98,6 +100,8 @@ while episode in range(N_episodes):
     agent.save_weights("./checkpoints")
 
 
+
+env.close()
 
 
 
