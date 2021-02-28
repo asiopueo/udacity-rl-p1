@@ -21,7 +21,7 @@ import Network
 # The last 2 numbers are the left/right turning velocity v_yaw and the forward/backward velocity v_lat of the agent: [v_yaw, v_lat]
 
 
-class Agent():
+class DDQNAgent():
     def __init__(self, buffer_size, batch_size, action_size, gamma):
         if not batch_size < buffer_size:
             raise Exception()
@@ -43,33 +43,25 @@ class Agent():
     def learn(self):
         # Retrieve batch of experiences from the replay buffer:
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.replay_buffer.sample_from_buffer()
-        # Prepare the target. Note that Q_target[:,action] will need to be assigned the 'true' learning target.
-        #Q_target = np.zeros((self.batch_size, 4))
-        Q_target = self.local_net.predict( state_batch )
-        Q_a_max = np.max( self.target_net.predict(next_state_batch), axis=1 )
 
-        X = []
-        y = []
+        # Prepare the TD-target. Note that Q_target[:,action] will need to be assigned the 'true' learning target.
+        
+        td_targets = self.local_net.predict( state_batch )
+        Q_target = self.target_net.predict( state_batch )
+        a_max = np.argmax( self.local_net.predict(next_state_batch), axis=1 )
+
 
         # Batches need to be prepared before learning
-        for index, state in enumerate(state_batch):    
+        for index, _ in enumerate(state_batch):    
             # Calculate the next q-value according to SARSA-MAX   
             # Q_target w.r.t. action:
             if not done_batch[index]:
-                Q_target[index, action_batch[index]] = reward_batch[index] + self.gamma * Q_a_max[index]
+                td_targets[index, action_batch[index]] = reward_batch[index] + self.gamma * Q_target[index, a_max[index]]
             else:
-                Q_target[index, action_batch[index]] = reward_batch[index]
+                td_targets[index, action_batch[index]] = reward_batch[index]
 
-            y.append(Q_target[index])
-            X.append(state)
-
-        y_np = np.array(y)
-        X_np = np.array(X)
-
-        #print("y_np.shape: ", y_np.shape)
-        #print("X_np.shape: ", X_np.shape)
-
-        self.local_net.fit(X_np, y_np, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
+        #self.local_net.fit(state_batch, td_targets, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
+        self.local_net.train_on_batch(state_batch, td_targets)
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.99):
@@ -95,13 +87,13 @@ class Agent():
         self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
 
     def load_weights(self, path):
-        filepath = os.path.join(path, "weights_latest.ckpt")
+        filepath = os.path.join(path, "ddqn_weights_latest.ckpt")
         print("Loading network weights from", filepath)
         self.local_net.load_weights(filepath)
         self.target_net.load_weights(filepath)
 
     def save_weights(self, path):
-        filepath = os.path.join(path, "weights_latest.ckpt")
+        filepath = os.path.join(path, "ddqn_weights_latest.ckpt")
         print("Saving target network weights to", filepath)
         self.target_net.save_weights(filepath)
 
