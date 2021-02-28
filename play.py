@@ -30,42 +30,15 @@ episode = 0
 ####################################
 #  Step-function and Main Loop:
 ####################################
-def step():
-    global score, time, state, env_info
-
-    # Select action according to policy:
-    action = agent.action(state, epsilon=0.99)
-    #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
-
-    # Take action and record the reward and the successive state
-    try:
-        env_info = env.step(action)[brain_name]
-    except:
-        print("Total score: {}".format(score))
-        env.close()
-
-    reward = env_info.rewards[0]
-    next_state = env_info.vector_observations[0]
-    done = env_info.local_done[0]
-
-    # Add experience to the agent's replay buffer:
-    exp = Experience(state, action, reward, next_state, done)
-    agent.replay_buffer.insert_into_buffer( exp )
-
-    # If buffer is sufficiently full, let the agent learn from his experience:
-    if agent.replay_buffer.buffer_usage():
-        agent.learn()
-
-    score += reward
-    state = next_state
-
-    return done
-        
 
 
 #agent.load_weights("./checkpoints")
 
 N_episodes = 500
+eps = 1.0
+eps_start = 1.0
+eps_end = 0.01
+eps_decay = 0.995
 
 while episode in range(N_episodes):
     time = 0
@@ -75,21 +48,36 @@ while episode in range(N_episodes):
     state = env_info.vector_observations[0]             # Get the current state
     
     while True:
-        done = step()
+        # Select action according to policy:
+        action = agent.action(state, epsilon=eps)
+        #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
+
+        # Take action and record the reward and the successive state
+        try:
+            env_info = env.step(action)[brain_name]
+        except:
+            print("Total score: {}".format(score))
+            env.close()
+
+        reward = env_info.rewards[0]
+        next_state = env_info.vector_observations[0]
+        done = env_info.local_done[0]
+
+        # Add experience to the agent's replay buffer:
+        exp = Experience(state, action, reward, next_state, done)
+        agent.replay_buffer.insert_into_buffer( exp )
+
+        agent.learn()
+
+        score += reward
+        state = next_state
 
         if done is True:
             break
-        
-        #print("[Time: {}] Score {}".format(time, score))
-
-        if time%10 == 0:
-            pass
-            #print("[Time: {}] Buffer usage: {}".format(time, agent.replay_buffer.buffer_usage()))
-        elif time%5 == 0:
-            agent.update_target_net()
 
         time += 1
-    
+
+    eps = max(eps*eps_decay, eps_end)
     score_avg = (score_avg*episode + score) / (episode+1)
 
     print("***********************************************")
