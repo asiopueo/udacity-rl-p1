@@ -1,4 +1,5 @@
 from unityagents import UnityEnvironment
+from collections import deque
 import numpy as np
 
 #################################
@@ -24,11 +25,13 @@ Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state'
 
 
 # Initial values:
-score_avg = 0   # Score is NOT the discounted reward but the final 'Banana Score' of the game
+score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
+score_trailing_list = deque(maxlen=10)
 episode = 0
 
+
 ####################################
-#  Step-function and Main Loop:
+#  Main learning loop:
 ####################################
 
 
@@ -51,13 +54,8 @@ while episode in range(N_episodes):
         # Select action according to policy:
         action = agent.action(state, epsilon=eps)
         #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
-
         # Take action and record the reward and the successive state
-        try:
-            env_info = env.step(action)[brain_name]
-        except:
-            print("Total score: {}".format(score))
-            env.close()
+        env_info = env.step(action)[brain_name]
 
         reward = env_info.rewards[0]
         next_state = env_info.vector_observations[0]
@@ -78,15 +76,22 @@ while episode in range(N_episodes):
         time += 1
 
     eps = max(eps*eps_decay, eps_end)
-    score_avg = (score_avg*episode + score) / (episode+1)
+    episode += 1
+
+    score_list.append(score)
+    score_trailing_list.append(score)
+
+    score_avg = np.mean(score_list)
+    score_trailing_avg = np.mean(score_trailing_list)
 
     print("***********************************************")
     print("Score of episode {}: {}".format(episode, score))
     print("Avg. score: {}".format(score_avg))
+    print("Trailing avg. score: {}".format(score_trailing_avg))
+    print("Greedy epsilon used: {}".format(eps))
     print("***********************************************")
-    episode += 1
-    agent.save_weights("./checkpoints")
 
+    agent.save_weights("./checkpoints")
 
 
 env.close()
