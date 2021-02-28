@@ -33,7 +33,7 @@ def network_simple():
     model.add( Dense(4) )
     model.add( Activation('softmax') )
 
-    model.compile(loss=losses.mean_squared_error, optimizer='sgd')
+    model.compile(loss=losses.mean_squared_error, optimizer='adam')
     return model
 
 
