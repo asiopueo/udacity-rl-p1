@@ -26,13 +26,10 @@ def network_simple():
 
     model.add( Dense(37, input_shape=(37,) ) )
     model.add( Activation('relu') )
-    model.add( Dropout(0.2) )
     model.add( Dense(64) )
     model.add( Activation('relu') )
-    model.add( Dropout(0.2) )
     model.add( Dense(64) )
     model.add( Activation('relu') )
-    model.add( Dropout(0.2) )
     model.add( Dense(4) )
     model.add( Activation('softmax') )
 
