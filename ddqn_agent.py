@@ -14,6 +14,7 @@ from abstract_agent import AbstractAgent
 # Ex. [0,0,1,1,0,0.34] means there is
 # The last 2 numbers are the left/right turning velocity v_yaw and the forward/backward velocity v_lat of the agent: [v_yaw, v_lat]
 
+tau = 0.001
 
 class DDQNAgent(AbstractAgent):
     def __init__(self, buffer_size, batch_size, action_size, gamma):
@@ -45,7 +46,7 @@ class DDQNAgent(AbstractAgent):
 
         #self.local_net.fit(state_batch, td_targets, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
         self.local_net.train_on_batch(state_batch, td_targets)
-        self.update_target_net()
+        self.update_target_net( tau )
 
 
 
