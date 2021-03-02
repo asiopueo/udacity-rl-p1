@@ -59,23 +59,21 @@ class AbstractAgent(ABC):
         #return np.random.randint(self.action_size)
 
     # Copy weights from short-term model to long-term model (soft update)
-    def update_target_net(self, tau=0.1):
-        # Implement soft update for later:
-        # get_weights()[0] -- weights
-        # get weights()[1] -- bias (if existent)
-        # Soft-update:
-        local_weights = np.array( self.local_net.get_weights() )
-        target_weights = np.array( self.target_net.get_weights() )
+    def update_target_net(self, tau=0.01):
+        local_weights = np.array( self.local_net.get_weights(), dtype=object )
+        target_weights = np.array( self.target_net.get_weights(), dtype=object )
         self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
+        #for t, l in zip(self.target_net.trainable_weights, self.local_net.trainable_weights):
+        #    t.assign( (1-tau)*t + tau*l )
 
     def load_weights(self, path):
-        filepath = os.path.join(path, "ddqn_weights_latest.ckpt")
+        filepath = os.path.join(path, "ddqn_weights_latest.tf")
         print("Loading network weights from", filepath)
         self.local_net.load_weights(filepath)
         self.target_net.load_weights(filepath)
 
     def save_weights(self, path):
-        filepath = os.path.join(path, "ddqn_weights_latest.ckpt")
+        filepath = os.path.join(path, "ddqn_weights_latest.tf")
         print("Saving target network weights to", filepath)
         self.target_net.save_weights(filepath)
 
