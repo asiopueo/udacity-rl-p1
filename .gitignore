@@ -1,4 +1,5 @@
 Banana_Linux/
+Banana_Linux_NoVis/
 checkpoints/
 *.ipynb_checkpoints/
 __pycache__/
