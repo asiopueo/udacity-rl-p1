@@ -8,7 +8,7 @@ This project is about training an agent to navigate and collect bananas in a lar
 ![Trained Agent][image1]
 
 There are two types of bananas available for collection: yellow bananas which - upon collection - provide a reward of +1 points, and blue bananas with a negative reward of -1 points. 
-The task is episodic and each episode consists of 300 consecutive steps. In order to succeed, the agent needs an average score of +13 points over 100 consecutive episodes. 
+The task is episodic and each episode consists of 300 consecutive steps. In order to succeed, the agent needs an average score of +13 points over 100 consecutive episodes.
 
 There are four discrete actions available for the agent at each step:
 
@@ -61,6 +61,7 @@ $Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(G_t - Q_\pi(s,a)\right)$
 
 $G_t$ = total reward for the whole episode
 
+
 ### Temporal-Difference Learning (TD-Learning)
 
 Update equation for the Q-value: 
@@ -84,8 +85,9 @@ Agent()
 + learn()
 + update_target_net()
 ```
-The `action()`-method contains the code for the epsilon-greedy-strategy with epsilon being the parameter $0<\epsilon\ll1$
-The `learn()`-method retrieves a batch of memories from the replay buffer and utilizes an gradient policies algorithm to train the agent.
+* The `action()`-method contains the code for the epsilon-greedy-strategy with epsilon being the parameter $0<\epsilon\ll1$
+* The `learn()`-method retrieves a batch of memories from the replay buffer and utilizes a gradient policies algorithm to train the agent.
+* Finally, `update_target_net()` 
 
 
 ## Replay Buffer Class
@@ -106,11 +108,7 @@ The artificial neural network for the simple problem consists of the following:
 ## Learning Strategy
 The chosen learning strategy is policy gradient.
 
-
-
-In practice
-
-
+In practice,
 
 After a predetermined cycle, the target network is updated by the `update_target_net()`-method using the parameter $0<\tau<1$:
 
@@ -138,5 +136,8 @@ There are two important strategies to tackle the instability issues:
 For the results, please refer to `Navigation.ipynb`. There you find the final version of the source code, as well as the resulting graphs.
 
 ## Literature
+
+
+
 
 
