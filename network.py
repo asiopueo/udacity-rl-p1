@@ -1,84 +1,37 @@
-import numpy as np
-
 import os
+import numpy as np
 os.environ['KMP_WARNINGS'] = 'FALSE'
+
 import tensorflow as tf
+from tensorflow import keras
+from keras import layers
 
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 print("Using TensorFlow version", tf.version.VERSION)
 
-from keras.models import Sequential
-from keras.layers import MaxPooling2D, Flatten, BatchNormalization
-from keras.layers import Dense, Dropout, Activation
-from keras.layers.convolutional import Convolution2D
-from keras.optimizers import Adam
-#from tf.keras.utils import np_utils, to_categorical # ???
-import tensorflow.keras.losses as losses
 
 
+# The input layer consists of 37 neurons (35 rays + 2 velocity)
 def network_simple():
-    model = Sequential()
-    # The input layer consists of 37 neurons (35 rays + 2 velocity)
-    # The angles are emanated as follows:
-    # [,,,,,,]
-
-    model.add( Dense(37, input_shape=(37,) ) )
-    model.add( Activation('relu') )
-    model.add( Dense(64, kernel_initializer=tf.initializers.he_normal() ) )
-    model.add( Activation('relu') )
-    model.add( Dense(64, kernel_initializer=tf.initializers.he_normal() ) )
-    model.add( Activation('relu') )
-    model.add( Dense(4) )
-    model.add( Activation('softmax') )
-
-    model.compile(loss=losses.mean_squared_error, optimizer='adam')
+    model = keras.models.Sequential()
+    model.add( layers.Dense(64, input_shape=(37,), kernel_initializer=tf.initializers.he_normal(), activation='relu' ) )
+    model.add( layers.Dense(64, kernel_initializer=tf.initializers.he_normal(), activation='relu' ) )
+    model.add( layers.Dense(4, activation='softmax') )
+    model.compile(loss=keras.losses.mean_squared_error, optimizer=keras.optimizers.Adam() )
     return model
 
 
-
+# The pixel model for later research
 """
-def network_pixel():
-    model = Sequential()
-
-    model.add( Convolution2D(32, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' )
-    model.add( BatchNormalization() )
-    model.add( MaxPooling2D( pool_size=(2,2), data_format='channels_first' ) )
-    model.add( Convolution2D(64, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' )
-    model.add( BatchNormalization() )
-    model.add( MaxPooling2D( pool_size=(2,2), data_format='channels_first') )
-
-    model.add( Flatten() )
-
-    model.add( Dense() )
-    model.add( Dense() )
-    model.add( Dense(4) )
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
-    return model
-
-
-
-def model_simple():
-    model = Sequential()
-    # The imput layer consists of 37 neurons (35 rays + 2 velocity)
-    model.add( Dense(37) )
-    model.add( Dense(64) )
-    model.add( Dense(64) )
-    model.add( Dense(4) )
-
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
-    return model
-
-
 def model_pixel():
     model = Sequential()
 
-    model.add( Convolution2D(32, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' )
+    model.add( Convolution2D(32, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' ))
     model.add( BatchNormalization() )
     model.add( MaxPooling2D( pool_size=(2,2), data_format='channels_first' ) )
-    model.add( Convolution2D(64, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' )
+    model.add( Convolution2D(64, (3,3), input_shape=(), padding='valid', strides=(1,1), activation='relu', data_format='channels_first' ))
     model.add( BatchNormalization() )
     model.add( MaxPooling2D( pool_size=(2,2), data_format='channels_first') )
 
