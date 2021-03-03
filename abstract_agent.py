@@ -39,6 +39,7 @@ class AbstractAgent(ABC):
         # QNetwork - We choose the simple network
         self.local_net = network.network_simple()
         self.target_net = network.network_simple()
+        self.hard_update_target_net()
 
     # Let the agent learn from experience
     @abstractmethod
@@ -46,11 +47,12 @@ class AbstractAgent(ABC):
         pass
 
     # Take action according to epsilon-greedy-policy:
-    def action(self, state, epsilon=0.01):
+    def action(self, state, epsilon=0.0):
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
             prob_distribution = self.local_net.predict(state.reshape(1,-1))
+            #print(prob_distribution)
             action = np.argmax(prob_distribution)
             return action
 
@@ -59,18 +61,21 @@ class AbstractAgent(ABC):
         #return np.random.randint(self.action_size)
 
     # Copy weights from short-term model to long-term model (soft update)
-    def update_target_net(self, tau=0.01):
-        local_weights = np.array( self.local_net.get_weights(), dtype=object )
-        target_weights = np.array( self.target_net.get_weights(), dtype=object )
-        self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
-        #for t, l in zip(self.target_net.trainable_weights, self.local_net.trainable_weights):
-        #    t.assign( (1-tau)*t + tau*l )
+    def update_target_net(self, tau=0.001):
+        #local_weights = np.array( self.local_net.get_weights(), dtype=object )
+        #target_weights = np.array( self.target_net.get_weights(), dtype=object )
+        #self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
+        for t, l in zip(self.target_net.trainable_weights, self.local_net.trainable_weights):
+            t.assign( (1-tau)*t + tau*l )
+
+    def hard_update_target_net(self):
+        self.target_net.set_weights( self.local_net.get_weights() )
 
     def load_weights(self, path):
         filepath = os.path.join(path, "ddqn_weights_latest.tf")
         print("Loading network weights from", filepath)
         self.local_net.load_weights(filepath)
-        self.target_net.load_weights(filepath)
+        self.hard_update_target_net()
 
     def save_weights(self, path):
         filepath = os.path.join(path, "ddqn_weights_latest.tf")
@@ -93,14 +98,13 @@ class ReplayBuffer():
     def sample_from_buffer(self):
         # Sample experience batch from experience buffer
         batch = random.sample(self.replay_buffer, self.batch_size)
-
         # Reorder experience batch such that we have a batch of states, a batch of actions, a batch of rewards, etc.
         # Eventually add 'if exp is not None'
-        state = np.vstack( [exp.state for exp in batch] )
-        action = np.vstack( [exp.action for exp in batch] )
-        reward = np.vstack( [exp.reward for exp in batch] )
-        state_next = np.vstack( [exp.next_state for exp in batch] )
-        done = np.vstack( [exp.done for exp in batch] )
+        state = np.vstack( [exp.state for exp in batch if exp is not None] )
+        action = np.vstack( [exp.action for exp in batch if exp is not None] )
+        reward = np.vstack( [exp.reward for exp in batch if exp is not None] )
+        state_next = np.vstack( [exp.next_state for exp in batch if exp is not None] )
+        done = np.vstack( [exp.done for exp in batch if exp is not None] )
 
         return state, action, reward, state_next, done
 
