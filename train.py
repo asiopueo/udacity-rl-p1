@@ -1,11 +1,13 @@
 from unityagents import UnityEnvironment
 from collections import deque
 import numpy as np
+import time
 
 #################################
 #  Initialization:
 #################################
-env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
+#env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
+env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
 # get the default brain
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
@@ -39,17 +41,17 @@ episode = 0
 
 N_episodes = 500
 eps = 1.0
-eps_start = 1.0
 eps_end = 0.01
 eps_decay = 0.995
 
 while episode in range(N_episodes):
-    time = 0
+    ticks = 0
     score = 0
 
-    env_info = env.reset(train_mode=False)[brain_name]  # Reset the environment
+    env_info = env.reset(train_mode=True)[brain_name]  # Reset the environment
     state = env_info.vector_observations[0]             # Get the current state
     
+    start = time.time()
     while True:
         # Select action according to policy:
         action = agent.action(state, epsilon=eps)
@@ -65,7 +67,8 @@ while episode in range(N_episodes):
         exp = Experience(state, action, reward, next_state, done)
         agent.replay_buffer.insert_into_buffer( exp )
 
-        agent.learn()
+        if ticks%4==0:
+            agent.learn()
 
         score += reward
         state = next_state
@@ -73,10 +76,9 @@ while episode in range(N_episodes):
         if done is True:
             break
 
-        time += 1
+        ticks += 1
 
-    eps = max(eps*eps_decay, eps_end)
-    episode += 1
+    end = time.time()
 
     score_list.append(score)
     score_trailing_list.append(score)
@@ -89,7 +91,11 @@ while episode in range(N_episodes):
     print("Avg. score: {}".format(score_avg))
     print("Trailing avg. score: {}".format(score_trailing_avg))
     print("Greedy epsilon used: {}".format(eps))
+    print("Time consumed: {} s".format(end-start))
     print("***********************************************")
+
+    eps = max(eps*eps_decay, eps_end)
+    episode += 1
 
     agent.save_weights("./checkpoints")
 
