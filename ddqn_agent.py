@@ -1,7 +1,8 @@
 import numpy as np
 from abstract_agent import AbstractAgent
 
-#import keras.backend as K
+import tensorflow as tf
+from tensorflow import keras
 
 # Available actions are:
 # 1. forward & backward
@@ -19,6 +20,7 @@ tau = 0.001
 class DDQNAgent(AbstractAgent):
     def __init__(self, buffer_size, batch_size, action_size, gamma):
         super().__init__(buffer_size, batch_size, action_size, gamma)
+        self.optimizer = keras.optimizers.Adam()
 
     # Let the agent learn from experience
     def learn(self):
@@ -34,7 +36,6 @@ class DDQNAgent(AbstractAgent):
         Q_target = self.target_net.predict( state_batch )
         a_max = np.argmax( self.local_net.predict(next_state_batch), axis=1 )
 
-
         # Batches need to be prepared before learning
         for index, _ in enumerate(state_batch):    
             # Calculate the next q-value according to SARSA-MAX   
@@ -46,6 +47,13 @@ class DDQNAgent(AbstractAgent):
 
         #self.local_net.fit(state_batch, td_targets, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
         self.local_net.train_on_batch(state_batch, td_targets)
+        
+        #with tf.GradientTape as tape:
+        #    pass
+        
+        #grads = tape.gradient(loss, self.local_net.trainable.variables)
+        #self.optimizer.apply_gradients( zip(grads, self.local_net.trainable_variables) )
+
         self.update_target_net( tau )
 
 
