@@ -32,7 +32,6 @@ class DDQNAgent(AbstractAgent):
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.replay_buffer.sample_from_buffer()
 
         # Keras-Compile-Fit-methodology:
-        """
         # Prepare the TD-target
         td_targets = self.local_net.predict( state_batch )
         Q_target = self.target_net.predict( state_batch )
@@ -49,18 +48,19 @@ class DDQNAgent(AbstractAgent):
 
         #self.local_net.fit(state_batch, td_targets, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
         self.local_net.train_on_batch(state_batch, td_targets)
-        """
-
-        # GradientTape-methodology:      
-        with tf.GradientTape as tape:
-            next_values = self.local_net([next_state_batch], training=True)
-            next_max_actions = np.argmax(next_values)
-            td_targets = reward_batch + self.gamma * self.target_net([next_max_actions], training=True) * (1-done_batch)
-
-            loss = tf.math.reduce_mean( td_targets-self.local_net([state_batch], training=True ))
         
-        grads = tape.gradient(loss, self.local_net.trainable.variables)
-        self.optimizer.apply_gradients( zip(grads, self.local_net.trainable_variables) )
+
+        # GradientTape-methodology:    
+        """  
+        with tf.GradientTape() as tape:
+            next_values = self.local_net([next_state_batch], training=True)
+            next_max_actions = tf.math.argmax(next_values, axis=1)
+            td_targets = reward_batch + self.gamma * self.target_net([state_batch], training=True) * (1-done_batch)
+            loss = tf.math.reduce_mean( tf.math.square(td_targets-self.local_net([state_batch], training=True)) )
+        
+        gradients = tape.gradient(loss, self.local_net.trainable_variables)
+        self.optimizer.apply_gradients( zip(gradients, self.local_net.trainable_variables) )
+        """
 
         self.update_target_net( tau )
 
