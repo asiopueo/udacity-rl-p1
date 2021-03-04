@@ -14,11 +14,11 @@ print("Using TensorFlow version", tf.version.VERSION)
 
 
 # The input layer consists of 37 neurons (35 rays + 2 velocity)
-"""def network_simple():
+def network_simple():
     input = layers.Input( shape=(37,) )
-    fc1 = layers.Dense(64, input_shape=(37,), kernel_initializer=tf.initializers.he_normal(), activation=keras.layers.ReLU() )( input )
+    fc1 = layers.Dense(64, kernel_initializer=tf.initializers.he_normal(), activation=keras.layers.ReLU() )( input )
     fc2 = layers.Dense(64, kernel_initializer=tf.initializers.he_normal(), activation=keras.layers.ReLU() )( fc1 )
-    output = layers.Dense(4, activation=keras.layers.Softmax() ) ( fc2 )
+    output = layers.Dense(4, kernel_initializer=tf.initializers.he_normal() ) ( fc2 )
     return keras.Model(inputs=input, outputs=output)
 
 """
@@ -29,7 +29,7 @@ def network_simple():
     model.add( layers.Dense(4, kernel_initializer='glorot_uniform' , bias_initializer='zeros') )
     model.compile(loss='mse', optimizer='adam' )
     return model
-
+"""
 
 
 
