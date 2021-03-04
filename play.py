@@ -6,7 +6,7 @@ import time
 #################################
 #  Initialization:
 #################################
-env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=True)
+env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
 # get the default brain
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
@@ -32,9 +32,9 @@ episode = 0
 ####################################
 
 
-agent.load_weights("./checkpoints")
+#agent.load_weights("./checkpoints")
 
-N_episodes = 500
+N_episodes = 100
 
 while episode in range(N_episodes):
     ticks = 0
@@ -46,7 +46,7 @@ while episode in range(N_episodes):
     start = time.time()
     while True:
         # Select action according to policy:
-        action = agent.action(state, epsilon=eps)
+        action = agent.action(state)
         #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
         env_info = env.step(action)[brain_name]
 
@@ -64,7 +64,6 @@ while episode in range(N_episodes):
 
     end = time.time()
 
-    episode += 1
 
     score_list.append(score)
     score_trailing_list.append(score)
@@ -79,6 +78,7 @@ while episode in range(N_episodes):
     print("Time consumed: {} s".format(end-start))
     print("***********************************************")
 
+    episode += 1
 
 env.close()
 
