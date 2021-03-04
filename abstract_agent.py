@@ -51,9 +51,7 @@ class AbstractAgent(ABC):
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
-            prob_distribution = self.local_net.predict(state.reshape(1,-1))
-            #print(prob_distribution)
-            action = np.argmax(prob_distribution)
+            action = np.argmax( self.local_net.predict(state.reshape(1,-1)) )
             return action
 
     def random_action(self):
