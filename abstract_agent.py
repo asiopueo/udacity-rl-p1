@@ -59,7 +59,7 @@ class AbstractAgent(ABC):
         #return np.random.randint(self.action_size)
 
     # Copy weights from short-term model to long-term model (soft update)
-    def update_target_net(self, tau=0.001):
+    def soft_update_target_net(self, tau=0.001):
         #local_weights = np.array( self.local_net.get_weights(), dtype=object )
         #target_weights = np.array( self.target_net.get_weights(), dtype=object )
         #self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
