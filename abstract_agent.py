@@ -7,6 +7,7 @@ from collections import namedtuple
 import network
 
 from abc import ABC, abstractmethod
+import time
 
 #import keras.backend as K
 
@@ -47,7 +48,7 @@ class AbstractAgent(ABC):
         pass
 
     # Take action according to epsilon-greedy-policy:
-    def action(self, state, epsilon=0.0):
+    def action(self, state, epsilon=0.02):
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
@@ -96,8 +97,8 @@ class ReplayBuffer():
     def sample_from_buffer(self):
         # Sample experience batch from experience buffer
         batch = random.sample(self.replay_buffer, self.batch_size)
+        
         # Reorder experience batch such that we have a batch of states, a batch of actions, a batch of rewards, etc.
-        # Eventually add 'if exp is not None'
         state = np.vstack( [exp.state for exp in batch if exp is not None] )
         action = np.vstack( [exp.action for exp in batch if exp is not None] )
         reward = np.vstack( [exp.reward for exp in batch if exp is not None] )

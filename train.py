@@ -41,7 +41,7 @@ episode = 0
 
 N_episodes = 500
 eps = 1.0
-eps_end = 0.01
+eps_end = 0.02
 eps_decay = 0.995
 
 while episode in range(N_episodes):

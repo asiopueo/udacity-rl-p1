@@ -33,7 +33,7 @@ class DDQNAgent(AbstractAgent):
 
         # Keras-Compile-Fit-methodology:
         # Prepare the TD-target
-        """
+        
         td_targets = self.local_net.predict( state_batch )
         Q_target = self.target_net.predict( state_batch )
         a_max = np.argmax( self.local_net.predict(next_state_batch), axis=1 )
@@ -68,7 +68,7 @@ class DDQNAgent(AbstractAgent):
         
         gradients = tape.gradient(loss, self.local_net.trainable_variables)
         self.optimizer.apply_gradients( zip(gradients, self.local_net.trainable_variables) )
-        
+        """
 
         self.update_target_net( tau )
 
