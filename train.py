@@ -1,29 +1,29 @@
 from unityagents import UnityEnvironment
-from collections import deque
+from collections import deque, namedtuple
 import numpy as np
 import time
 
 #################################
 #  Initialization:
 #################################
-#env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
-env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
-# get the default brain
-brain_name = env.brain_names[0]
-brain = env.brains[brain_name]
-
-from dqn_agent import DQNAgent
-from ddqn_agent import DDQNAgent
-from collections import namedtuple
-
-
-# Initialize the agent:
-#agent = DQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
-# Alternatively, try out the Double-Q-Learning Agent:
-agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
 
 # Define named tuple 'Experience'; you can use a dictionary alternatively
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
+
+#env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
+env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
+# Get the default brain
+brain_name = env.brain_names[0]
+brain = env.brains[brain_name]
+
+# Initialize the agent:
+#from dqn_agent import DQNAgent
+#agent = DQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
+
+# Alternatively, try out the Double-Q-Learning Agent:
+from ddqn_agent import DDQNAgent
+agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98, algo_type='GRADIENT_TAPE')
+
 
 
 # Initial values:
@@ -43,6 +43,7 @@ N_episodes = 500
 eps = 1.0
 eps_end = 0.02
 eps_decay = 0.995
+learning_period = 4
 
 while episode in range(N_episodes):
     ticks = 0
@@ -67,7 +68,7 @@ while episode in range(N_episodes):
         exp = Experience(state, action, reward, next_state, done)
         agent.replay_buffer.insert_into_buffer( exp )
 
-        if ticks%4==0:
+        if ticks % learning_period == 0:
             agent.learn()
 
         score += reward
@@ -88,10 +89,10 @@ while episode in range(N_episodes):
 
     print("***********************************************")
     print("Score of episode {}: {}".format(episode, score))
-    print("Avg. score: {}".format(score_avg))
-    print("Trailing avg. score: {}".format(score_trailing_avg))
+    print("Avg. score: {:.2f}".format(score_avg))
+    print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
     print("Greedy epsilon used: {}".format(eps))
-    print("Time consumed: {} s".format(end-start))
+    print("Time consumed: {:.2f} s".format(end-start))
     print("***********************************************")
 
     eps = max(eps*eps_decay, eps_end)
