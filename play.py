@@ -73,9 +73,9 @@ while episode in range(N_episodes):
 
     print("***********************************************")
     print("Score of episode {}: {}".format(episode, score))
-    print("Avg. score: {}".format(score_avg))
-    print("Trailing avg. score: {}".format(score_trailing_avg))
-    print("Time consumed: {} s".format(end-start))
+    print("Avg. score: {:.2f}".format(score_avg))
+    print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
+    print("Time consumed: {:.2f} s".format(end-start))
     print("***********************************************")
 
     episode += 1
