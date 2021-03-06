@@ -18,51 +18,66 @@ from tensorflow import keras
 tau = 0.001
 
 class DDQNAgent(AbstractAgent):
-    def __init__(self, buffer_size, batch_size, action_size, gamma, algo_type):
+    def __init__(self, buffer_size, batch_size, action_size, gamma, algo_type='GRADIENT_TAPE'):
         super().__init__(buffer_size, batch_size, action_size, gamma)
-        self.optimizer = keras.optimizers.Adam()
+        self.optimizer = tf.optimizers.Adam(lr=0.0005)
         self.algo_type = algo_type
 
     # Let the agent learn from experience
+    #@tf.function
     def learn(self):
         # Check if buffer is sufficiently full:
         if not self.replay_buffer.buffer_usage():
             return
         
-        # Retrieve batch of experiences from the replay buffer:
         state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.replay_buffer.sample_from_buffer()
 
-        # Prepare the TD-target
         if self.algo_type == 'COMPILE_FIT':
             # Keras-Compile-Fit-methodology:
             td_targets = self.local_net.predict( state_batch )
-            Q_target = self.target_net.predict( state_batch )
+            Q_targets = self.target_net.predict( state_batch )
             a_max = np.argmax( self.local_net.predict(next_state_batch), axis=1 )
 
             for index, _ in enumerate(state_batch):    
-                # Calculate the next q-value according to SARSA-MAX
-                td_targets[index, action_batch[index]] = reward_batch[index] + self.gamma * Q_target[index, a_max[index]] * (1-done_batch[index])
+                td_targets[index, action_batch[index]] = reward_batch[index] + self.gamma * Q_targets[index, a_max[index]] * (1-done_batch[index])
+
+            #td_error = td_targets - self.local_net.predict( state_batch )
+            #print(action_batch)
+            #print(td_error)
 
             #self.local_net.fit(state_batch, td_targets, batch_size=self.batch_size, epochs=1, shuffle=False, verbose=0)
-            self.local_net.train_on_batch(state_batch, td_targets)  
-        elif self.algo_type == 'GRADIENT_TAPE'
+            loss = self.local_net.train_on_batch(state_batch, td_targets)
+            #loss_ = tf.reduce_mean( tf.math.square(td_error))
+            #print(loss)
+            #print(loss_)
+
+        elif self.algo_type == 'GRADIENT_TAPE':
             # GradientTape-methodology:
+            state_batch = tf.convert_to_tensor(state_batch)
+
+            """next_values = self.local_net([next_state_batch], training=False)
+            a_max = tf.math.argmax(next_values, axis=1)
+            Q_targets = self.target_net([state_batch], training=False)
+            index_sequence = tf.stack( (tf.range(0, a_max.shape[0], dtype=tf.int64), a_max), axis=1 ) # Enumerated a_max-sequence
+            Q_targets_max = tf.reshape(tf.gather_nd(Q_targets, index_sequence), (-1,1))
+            td_targets = reward_batch + self.gamma * Q_targets_max * (1-done_batch)"""
+
+            old_weights = self.local_net.trainable_weights
+
             with tf.GradientTape() as tape:
-                next_values = self.local_net([next_state_batch], training=True)
-                next_max_actions = tf.math.argmax(next_values, axis=1)
-
-                values = self.target_net([state_batch], training=True)
-                counter = tf.range(0, 64) # Only experimental
-                counter = tf.cast(counter, dtype=tf.int64)  # To fix an apparent bug within the tf-framework
-                indices = tf.stack( (counter, next_max_actions), axis=1 )
-                values_a = tf.reshape(tf.gather_nd(values, indices), (-1,1))
-
-                td_targets = reward_batch + self.gamma * values_a * (1-done_batch)
-                loss = tf.math.reduce_mean( tf.math.square(td_targets-self.local_net([state_batch], training=True)) )
-            
-            gradients = tape.gradient(loss, self.local_net.trainable_variables)
-            self.optimizer.apply_gradients( zip(gradients, self.local_net.trainable_variables) )
+                #td_error = td_targets - self.local_net([state_batch], training=True)
+                td_error = self.local_net([state_batch], training=True)
+                loss = tf.math.reduce_mean( tf.math.square(td_error) ) 
         
+            gradients = tape.gradient(loss, self.local_net.trainable_weights)
+            keras.optimizers.Adam().apply_gradients( zip(gradients, self.local_net.trainable_weights ) )
+
+            print(gradients[1])
+            print("Before: ", old_weights[1])
+            print("After: ", self.local_net.trainable_weights[1])
+
+
+            #print(before==self.local_net.trainable_weights)
 
         self.soft_update_target_net( tau )
 

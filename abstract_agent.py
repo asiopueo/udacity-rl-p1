@@ -9,6 +9,8 @@ import network
 from abc import ABC, abstractmethod
 import time
 
+import tensorflow as tf
+
 #import keras.backend as K
 
 # Available actions are:
@@ -52,7 +54,10 @@ class AbstractAgent(ABC):
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
-            action = np.argmax( self.local_net.predict(state.reshape(1,-1)) )
+            state_tensor = tf.convert_to_tensor(state)
+            state_tensor = tf.expand_dims(state_tensor, 0)
+            action_probs = self.local_net(state_tensor, training=False )
+            action = np.argmax( action_probs.numpy() )
             return action
 
     def random_action(self):
