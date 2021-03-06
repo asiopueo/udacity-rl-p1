@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-device = torch.device("cudo:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Available actions are:
 # 1. forward & backward
@@ -28,24 +28,25 @@ device = torch.device("cudo:0" if torch.cuda.is_available() else "cpu")
 
 
 class TorchAgent():
-    def __init__(self, buffer_size, batch_size, action_size, gamma, LR=0.0005):
+    def __init__(self, buffer_size, batch_size, action_size, gamma, learn_rate=0.0005):
         if not batch_size < buffer_size:
             raise Exception()
 
         self.state_size = 37
         self.buffer_size = buffer_size
         self.batch_size = batch_size
-        self.action_size = 4
+        self.action_size = action_size
         self.gamma = gamma
-        self.lr = LR
+        self.lr = learn_rate
 
         # Initialize replay buffer
         self.replay_buffer = ReplayBuffer(buffer_size, batch_size)
         # Seed the random number generator
-        seed = 0#random.seed()
+        seed = 2#random.seed()
         # QNetwork - We choose the simple network
-        self.local_net = QNetwork(self.state_size, self.action_size, seed)
-        self.target_net = QNetwork(self.state_size, self.action_size, seed)
+        self.local_net = QNetwork(self.state_size, self.action_size, seed).to(device)
+        self.target_net = QNetwork(self.state_size, self.action_size, seed).to(device)
+        self.hard_update_target_net()
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=self.lr)
 
         #self.hard_update_target_net()
@@ -63,50 +64,57 @@ class TorchAgent():
         qsa_local = qsa_local.reshape((self.batch_size, 1))
 
         qs_target = self.target_net.forward(next_state_batch)
-        _, qsa_local_argmax_a = torch.max(qs_local, dim=1) #using the greedy policy (q-learning)
+        _, qsa_local_argmax_a = torch.max(qs_local, dim=1)
         qsa_target = qs_target[torch.arange(self.batch_size, dtype=torch.long), qsa_local_argmax_a.reshape(self.batch_size)]
 
-        qsa_target = qsa_target * (1 - done_batch.reshape(self.batch_size)) #target qsa value is zero when episode is complete
+        qsa_target = qsa_target * (1 - done_batch.reshape(self.batch_size))
         qsa_target = qsa_target.reshape((self.batch_size,1))
         TD_target = reward_batch + self.gamma * qsa_target
 
-
-
+        loss = F.mse_loss(qsa_local, TD_target)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
 
     # Take action according to epsilon-greedy-policy:
     def action(self, state, epsilon=0.02):
+        
+        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+        self.local_net.eval()
+        with torch.no_grad():
+            action_values = self.local_net(state)
+        self.local_net.train()
+
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
-            return random.randrange(0, self.action_size)
+            return np.argmax(action_values.cpu().data.numpy())
 
     def random_action(self):
         return random.randrange(0, self.action_size)
-        #return np.random.randint(self.action_size)
 
     # Copy weights from short-term model to long-term model (soft update)
     def soft_update_target_net(self, tau=0.001):
         #local_weights = np.array( self.local_net.get_weights(), dtype=object )
         #target_weights = np.array( self.target_net.get_weights(), dtype=object )
         #self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
-        for t, l in zip(self.target_net.trainable_weights, self.local_net.trainable_weights):
-            t.assign( (1-tau)*t + tau*l )
+        for t, l in zip(self.target_net.parameters(), self.local_net.parameters() ):
+            t.data.copy_( (1-tau)*t.data + tau*l.data )
 
     def hard_update_target_net(self):
-        self.target_net.set_weights( self.local_net.get_weights() )
+        self.soft_update_target_net( tau=1.0 )
 
     def load_weights(self, path):
-        filepath = os.path.join(path, "ddqn_weights_latest.tf")
+        filepath = os.path.join(path, "ddqn_weights_latest.pth")
         print("Loading network weights from", filepath)
-        self.local_net.load_weights(filepath)
+        self.local_net.load_state_dict(torch.load(filepath, map_location=lambda storage, loc: storage))
         self.hard_update_target_net()
 
     def save_weights(self, path):
-        filepath = os.path.join(path, "ddqn_weights_latest.tf")
+        filepath = os.path.join(path, "ddqn_weights_latest.pth")
         print("Saving target network weights to", filepath)
-        self.target_net.save_weights(filepath)
-
+        torch.save(self.target_net.state_dict(), filepath) 
 
 
 class ReplayBuffer():
@@ -128,7 +136,7 @@ class ReplayBuffer():
         state = torch.from_numpy( np.vstack( [exp.state for exp in batch if exp is not None] )).float().to(device)
         action = torch.from_numpy( np.vstack( [exp.action for exp in batch if exp is not None] )).long().to(device)
         reward = torch.from_numpy( np.vstack( [exp.reward for exp in batch if exp is not None] )).float().to(device)
-        state_next = torch.from_numpy( np.vstack( [exp.next_state for exp in batch if exp is not None] )).float().to(device)
+        state_next = torch.from_numpy( np.vstack( [exp.next_state for exp in batch if exp is not None] ).astype(np.uint8)).float().to(device)
         done = torch.from_numpy( np.vstack( [exp.done for exp in batch if exp is not None] )).float().to(device)
 
         return state, action, reward, state_next, done

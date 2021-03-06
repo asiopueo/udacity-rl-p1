@@ -11,19 +11,23 @@ env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=Fal
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
-from dqn_agent import DQNAgent
-from ddqn_agent import DDQNAgent
+#from dqn_agent import DQNAgent
+#from ddqn_agent import DDQNAgent
 from collections import namedtuple
 
 
 # Initialize the agent:
 #agent = DQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
 # Alternatively, try out the Double-Q-Learning Agent:
-agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
+#agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99)
+from agent_torch import TorchAgent
+agent = TorchAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99)
+
+
 
 # Initial values:
 score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
-score_trailing_list = deque(maxlen=10)
+score_trailing_list = deque(maxlen=100)
 episode = 0
 
 
@@ -32,7 +36,7 @@ episode = 0
 ####################################
 
 
-agent.load_weights("./checkpoints")
+agent.load_weights("./checkpoints_torch")
 
 N_episodes = 100
 

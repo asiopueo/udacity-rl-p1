@@ -2,6 +2,7 @@ from unityagents import UnityEnvironment
 from collections import deque, namedtuple
 import numpy as np
 import time
+import torch
 
 #################################
 #  Initialization:
@@ -21,14 +22,18 @@ brain = env.brains[brain_name]
 #agent = DQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98)
 
 # Alternatively, try out the Double-Q-Learning Agent:
-from ddqn_agent import DDQNAgent
-agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.98, algo_type='GRADIENT_TAPE')
+#from ddqn_agent import DDQNAgent
+#agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99, algo_type='GRADIENT_TAPE')
+#agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99, algo_type='COMPILE_FIT')
 
+# Agent based on PyTorch:
+from agent_torch import TorchAgent
+agent = TorchAgent(buffer_size=10000, batch_size=128, action_size=4, gamma=0.99)
 
 
 # Initial values:
 score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
-score_trailing_list = deque(maxlen=10)
+score_trailing_list = deque(maxlen=100)
 episode = 0
 
 
@@ -40,7 +45,7 @@ episode = 0
 #agent.load_weights("./checkpoints")
 
 N_episodes = 500
-eps = 1.0
+eps = 1.
 eps_end = 0.02
 eps_decay = 0.995
 learning_period = 4
@@ -50,7 +55,7 @@ while episode in range(N_episodes):
     score = 0
 
     env_info = env.reset(train_mode=True)[brain_name]  # Reset the environment
-    state = env_info.vector_observations[0]             # Get the current state
+    state = env_info.vector_observations[0]            # Get the current state
     
     start = time.time()
     while True:
@@ -91,14 +96,14 @@ while episode in range(N_episodes):
     print("Score of episode {}: {}".format(episode, score))
     print("Avg. score: {:.2f}".format(score_avg))
     print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
-    print("Greedy epsilon used: {}".format(eps))
+    print("Greedy epsilon used: {:.2f}".format(eps))
     print("Time consumed: {:.2f} s".format(end-start))
     print("***********************************************")
 
     eps = max(eps*eps_decay, eps_end)
     episode += 1
 
-    agent.save_weights("./checkpoints")
+    agent.save_weights("./checkpoints_torch")
 
 
 env.close()
