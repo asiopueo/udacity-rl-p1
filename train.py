@@ -31,79 +31,84 @@ from agent_torch import TorchAgent
 agent = TorchAgent(buffer_size=10000, batch_size=128, action_size=4, gamma=0.99)
 
 
-# Initial values:
-score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
-score_trailing_list = deque(maxlen=100)
-episode = 0
 
 
 ####################################
 #  Main learning loop:
 ####################################
 
-
 #agent.load_weights("./checkpoints")
 
-N_episodes = 500
-eps = 1.
-eps_end = 0.02
-eps_decay = 0.995
-learning_period = 4
+def training(n_episodes=500)
+    eps = 1.
+    eps_end = 0.02
+    eps_decay = 0.995
+    learning_period = 4
 
-while episode in range(N_episodes):
-    ticks = 0
-    score = 0
+    score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
+    score_trailing_list = deque(maxlen=100)
 
-    env_info = env.reset(train_mode=True)[brain_name]  # Reset the environment
-    state = env_info.vector_observations[0]            # Get the current state
-    
-    start = time.time()
-    while True:
-        # Select action according to policy:
-        action = agent.action(state, epsilon=eps)
-        #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
-        # Take action and record the reward and the successive state
-        env_info = env.step(action)[brain_name]
+    while episode in range(n_episodes):
+        ticks = 0
+        score = 0
 
-        reward = env_info.rewards[0]
-        next_state = env_info.vector_observations[0]
-        done = env_info.local_done[0]
+        env_info = env.reset(train_mode=True)[brain_name]  # Reset the environment
+        state = env_info.vector_observations[0]            # Get the current state
+        
+        start = time.time()
+        while True:
+            # Select action according to policy:
+            action = agent.action(state, epsilon=eps)
+            #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
+            # Take action and record the reward and the successive state
+            env_info = env.step(action)[brain_name]
 
-        # Add experience to the agent's replay buffer:
-        exp = Experience(state, action, reward, next_state, done)
-        agent.replay_buffer.insert_into_buffer( exp )
+            reward = env_info.rewards[0]
+            next_state = env_info.vector_observations[0]
+            done = env_info.local_done[0]
 
-        if ticks % learning_period == 0:
-            agent.learn()
+            # Add experience to the agent's replay buffer:
+            exp = Experience(state, action, reward, next_state, done)
+            agent.replay_buffer.insert_into_buffer( exp )
 
-        score += reward
-        state = next_state
+            if ticks % learning_period == 0:
+                agent.learn()
 
-        if done is True:
-            break
+            score += reward
+            state = next_state
 
-        ticks += 1
+            if done is True:
+                break
 
-    end = time.time()
+            ticks += 1
 
-    score_list.append(score)
-    score_trailing_list.append(score)
+        end = time.time()
 
-    score_avg = np.mean(score_list)
-    score_trailing_avg = np.mean(score_trailing_list)
+        score_list.append(score)
+        score_trailing_list.append(score)
 
-    print("***********************************************")
-    print("Score of episode {}: {}".format(episode, score))
-    print("Avg. score: {:.2f}".format(score_avg))
-    print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
-    print("Greedy epsilon used: {:.2f}".format(eps))
-    print("Time consumed: {:.2f} s".format(end-start))
-    print("***********************************************")
+        score_avg = np.mean(score_list)
+        score_trailing_avg = np.mean(score_trailing_list)
 
-    eps = max(eps*eps_decay, eps_end)
-    episode += 1
+        print("***********************************************")
+        print("Score of episode {}: {}".format(episode, score))
+        print("Avg. score: {:.2f}".format(score_avg))
+        print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
+        print("Greedy epsilon used: {:.2f}".format(eps))
+        print("Time consumed: {:.2f} s".format(end-start))
+        print("***********************************************")
 
-    agent.save_weights("./checkpoints_torch")
+        eps = max(eps*eps_decay, eps_end)
+        episode += 1
+
+        agent.save_weights("./checkpoints_torch")
+
+    return score_list, score_trailing_list
+
+
+
+#training()
+
 
 
 env.close()
