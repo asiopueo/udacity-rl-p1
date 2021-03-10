@@ -3,15 +3,14 @@ import random
 import os
 import numpy as np
 from collections import namedtuple
-
-from network_torch import QNetwork
-
-from abc import ABC, abstractmethod
 import time
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+
+from network_torch import QNetwork
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -42,14 +41,12 @@ class TorchAgent():
         # Initialize replay buffer
         self.replay_buffer = ReplayBuffer(buffer_size, batch_size)
         # Seed the random number generator
-        seed = 2#random.seed()
+        seed = 0#random.seed()
         # QNetwork - We choose the simple network
         self.local_net = QNetwork(self.state_size, self.action_size, seed).to(device)
         self.target_net = QNetwork(self.state_size, self.action_size, seed).to(device)
         self.hard_update_target_net()
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=self.lr)
-
-        #self.hard_update_target_net()
 
     # Let the agent learn from experience
     def learn(self):
@@ -57,24 +54,42 @@ class TorchAgent():
         if not self.replay_buffer.buffer_usage():
             return
         
-        state_batch, action_batch, reward_batch, next_state_batch, done_batch = self.replay_buffer.sample_from_buffer()
+        states, actions, rewards, next_states, dones = self.replay_buffer.sample_from_buffer()
 
-        qs_local = self.local_net.forward(state_batch)
-        qsa_local = qs_local[torch.arange(self.batch_size, dtype=torch.long), action_batch.reshape(self.batch_size)]
-        qsa_local = qsa_local.reshape((self.batch_size, 1))
+        qs_local = self.local_net.forward(states)
+        qsa_local = qs_local[ torch.arange(self.batch_size, dtype=torch.long), actions.reshape(self.batch_size) ]
+        qsa_local = qsa_local.reshape( (self.batch_size, 1) )
 
-        qs_target = self.target_net.forward(next_state_batch)
+        qs_target = self.target_net.forward(next_states)
         _, qsa_local_argmax_a = torch.max(qs_local, dim=1)
-        qsa_target = qs_target[torch.arange(self.batch_size, dtype=torch.long), qsa_local_argmax_a.reshape(self.batch_size)]
+        qsa_target = qs_target[ torch.arange(self.batch_size, dtype=torch.long), qsa_local_argmax_a.reshape(self.batch_size) ]
 
-        qsa_target = qsa_target * (1 - done_batch.reshape(self.batch_size))
+        qsa_target = qsa_target * (1 - dones.reshape(self.batch_size))
         qsa_target = qsa_target.reshape((self.batch_size,1))
-        TD_target = reward_batch + self.gamma * qsa_target
+        TD_target = rewards + self.gamma * qsa_target
 
         loss = F.mse_loss(qsa_local, TD_target)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+        """
+        Q_targets_next = self.target_net(next_states).detach().max(1)[0].unsqueeze(1)
+        # Compute Q targets for current states 
+        Q_targets = rewards + (self.gamma * Q_targets_next * (1 - dones))
+
+        # Get expected Q values from local model
+        Q_expected = self.local_net(states).gather(1, actions)
+
+        # Compute loss
+        loss = F.mse_loss(Q_expected, Q_targets)
+        # Minimize the loss
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        """
+
+        self.soft_update_target_net()
 
 
     # Take action according to epsilon-greedy-policy:
@@ -83,7 +98,7 @@ class TorchAgent():
         state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         self.local_net.eval()
         with torch.no_grad():
-            action_values = self.local_net(state)
+            action_values = self.local_net.forward(state)
         self.local_net.train()
 
         if random.random() < epsilon:
@@ -96,9 +111,6 @@ class TorchAgent():
 
     # Copy weights from short-term model to long-term model (soft update)
     def soft_update_target_net(self, tau=0.001):
-        #local_weights = np.array( self.local_net.get_weights(), dtype=object )
-        #target_weights = np.array( self.target_net.get_weights(), dtype=object )
-        #self.target_net.set_weights( tau*local_weights + (1-tau)*target_weights )
         for t, l in zip(self.target_net.parameters(), self.local_net.parameters() ):
             t.data.copy_( (1-tau)*t.data + tau*l.data )
 
