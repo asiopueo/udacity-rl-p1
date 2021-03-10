@@ -11,8 +11,8 @@ import torch
 # Define named tuple 'Experience'; you can use a dictionary alternatively
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
 
-#env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
-env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
+env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
+#env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
 # Get the default brain
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
@@ -26,9 +26,10 @@ brain = env.brains[brain_name]
 #agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99, algo_type='GRADIENT_TAPE')
 #agent = DDQNAgent(buffer_size=10000, batch_size=64, action_size=4, gamma=0.99, algo_type='COMPILE_FIT')
 
+
 # Agent based on PyTorch:
 from agent_torch import TorchAgent
-agent = TorchAgent(buffer_size=10000, batch_size=128, action_size=4, gamma=0.99)
+agent = TorchAgent(buffer_size=100000, batch_size=64, action_size=4, gamma=0.99)
 
 
 # Initial values:
@@ -61,14 +62,14 @@ while episode in range(N_episodes):
     while True:
         # Select action according to policy:
         action = agent.action(state, epsilon=eps)
-        #print("[Episode {}, Time {}] Action taken: {}".format(episode, time, action))
+
         # Take action and record the reward and the successive state
         env_info = env.step(action)[brain_name]
 
         reward = env_info.rewards[0]
         next_state = env_info.vector_observations[0]
         done = env_info.local_done[0]
-
+        
         # Add experience to the agent's replay buffer:
         exp = Experience(state, action, reward, next_state, done)
         agent.replay_buffer.insert_into_buffer( exp )
@@ -103,7 +104,7 @@ while episode in range(N_episodes):
     eps = max(eps*eps_decay, eps_end)
     episode += 1
 
-    agent.save_weights("./checkpoints_torch")
+    agent.save_weights("./checkpoints")
 
 
 env.close()

@@ -36,7 +36,7 @@ episode = 0
 ####################################
 
 
-agent.load_weights("./checkpoints_torch")
+agent.load_weights("./checkpoints")
 
 N_episodes = 100
 
