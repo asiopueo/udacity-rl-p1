@@ -55,28 +55,6 @@ The initial development was largely done from the command line with the tuning o
 
 
 
-## Deep Q-Learning
-
-### Monte-Carlo Learning
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(G_t - Q_\pi(s,a)\right)$
-
-$G_t$ = total reward for the whole episode
-
-
-### Temporal-Difference Learning (TD-Learning)
-
-Update equation for the Q-value: 
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha\left( r(s,a) + Q_\pi(s',a') - Q_\pi(s,a)\right)$
-
-SARSA-max:
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(r(s,a)+\max_{a'} Q_\pi(s',a') - Q_\pi(s,a\right)$
-
-Update equation for the weights:
-
-$w = w + \alpha\left( r(s,a)+\max_{a'} Q_\pi(s',a',w)-Q_\pi(s,a,w)\right) \nabla_w Q_\pi(s,a,w)$
 
 
 ## Agent Class
