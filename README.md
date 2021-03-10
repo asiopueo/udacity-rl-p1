@@ -2,6 +2,8 @@
 
 [image1]: https://user-images.githubusercontent.com/10624937/42135619-d90f2f28-7d12-11e8-8823-82b970a54d7e.gif "Trained Agent"
 
+[A full detailed report of this project can be downloaded here.](https://mlgoettingen.s3.eu-central-1.amazonaws.com/DRLND_Report_Project_1.pdf)
+
 # Project 1: Navigation
 This project is about training an agent to navigate and collect bananas in a large, rectangular world.  
 
@@ -53,28 +55,6 @@ The initial development was largely done from the command line with the tuning o
 
 
 
-## Deep Q-Learning
-
-### Monte-Carlo Learning
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(G_t - Q_\pi(s,a)\right)$
-
-$G_t$ = total reward for the whole episode
-
-
-### Temporal-Difference Learning (TD-Learning)
-
-Update equation for the Q-value: 
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha\left( r(s,a) + Q_\pi(s',a') - Q_\pi(s,a)\right)$
-
-SARSA-max:
-
-$Q_\pi(s,a) = Q_\pi(s,a) + \alpha \left(r(s,a)+\max_{a'} Q_\pi(s',a') - Q_\pi(s,a\right)$
-
-Update equation for the weights:
-
-$w = w + \alpha\left( r(s,a)+\max_{a'} Q_\pi(s',a',w)-Q_\pi(s,a,w)\right) \nabla_w Q_\pi(s,a,w)$
 
 
 ## Agent Class
