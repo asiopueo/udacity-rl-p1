@@ -16,5 +16,5 @@ class QNetwork(nn.Module):
     def forward(self, state):
         x = F.relu( self.fc1(state) )
         x = F.relu( self.fc2(x) )
-        state = self.fc3( x )
-        return state
+        action = self.fc3( x )
+        return action
