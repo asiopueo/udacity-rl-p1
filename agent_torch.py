@@ -41,10 +41,10 @@ class TorchAgent():
         # Initialize replay buffer
         self.replay_buffer = ReplayBuffer(buffer_size, batch_size)
         # Seed the random number generator
-        seed = 0#random.seed()
+        seed = 2#random.seed()
         # QNetwork - We choose the simple network
         self.local_net = QNetwork(self.state_size, self.action_size, seed).to(device)
-        self.target_net = QNetwork(self.state_size, self.action_size, seed).to(device)
+        self.target_net = QNetwork(self.state_size, self.action_size, seed=3).to(device)
         self.hard_update_target_net()
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=self.lr)
 
@@ -104,6 +104,7 @@ class TorchAgent():
         if random.random() < epsilon:
             return random.randrange(0, self.action_size)
         else:
+            #print(action_values.cpu().data.numpy())
             return np.argmax(action_values.cpu().data.numpy())
 
     def random_action(self):
@@ -148,8 +149,8 @@ class ReplayBuffer():
         state = torch.from_numpy( np.vstack( [exp.state for exp in batch if exp is not None] )).float().to(device)
         action = torch.from_numpy( np.vstack( [exp.action for exp in batch if exp is not None] )).long().to(device)
         reward = torch.from_numpy( np.vstack( [exp.reward for exp in batch if exp is not None] )).float().to(device)
-        state_next = torch.from_numpy( np.vstack( [exp.next_state for exp in batch if exp is not None] ).astype(np.uint8)).float().to(device)
-        done = torch.from_numpy( np.vstack( [exp.done for exp in batch if exp is not None] )).float().to(device)
+        state_next = torch.from_numpy( np.vstack( [exp.next_state for exp in batch if exp is not None] ) ).float().to(device)
+        done = torch.from_numpy( np.vstack( [exp.done for exp in batch if exp is not None] ).astype(np.uint8) ).float().to(device)
 
         return state, action, reward, state_next, done
 
