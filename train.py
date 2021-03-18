@@ -11,7 +11,7 @@ import torch
 # Define named tuple 'Experience'; you can use a dictionary alternatively
 Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state', 'done'])
 
-env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=False)
+env = UnityEnvironment(file_name="./Banana_Linux/Banana.x86_64", no_graphics=True)
 #env = UnityEnvironment(file_name="./Banana_Linux_NoVis/Banana.x86_64")
 # Get the default brain
 brain_name = env.brain_names[0]
@@ -40,7 +40,7 @@ agent = TorchAgent(buffer_size=100000, batch_size=64, action_size=4, gamma=0.99)
 
 #agent.load_weights("./checkpoints")
 
-def training(n_episodes=500)
+def training(n_episodes=500):
     eps = 1.
     eps_end = 0.02
     eps_decay = 0.995
@@ -49,7 +49,7 @@ def training(n_episodes=500)
     score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
     score_trailing_list = deque(maxlen=100)
 
-    while episode in range(n_episodes):
+    for episode in range(n_episodes):
         ticks = 0
         score = 0
 
@@ -88,16 +88,19 @@ def training(n_episodes=500)
         score_list.append(score)
         score_trailing_list.append(score)
 
-        score_avg = np.mean(score_list)
         score_trailing_avg = np.mean(score_trailing_list)
 
         print("***********************************************")
         print("Score of episode {}: {}".format(episode, score))
-        print("Avg. score: {:.2f}".format(score_avg))
         print("Trailing avg. score: {:.2f}".format(score_trailing_avg))
         print("Greedy epsilon used: {:.2f}".format(eps))
         print("Time consumed: {:.2f} s".format(end-start))
         print("***********************************************")
+
+        if score_trailing_avg >= 13.0:
+            print("===============================================")
+            print("Challenge solved at episode {}".format(episode))
+            print("===============================================")
 
         eps = max(eps*eps_decay, eps_end)
         episode += 1
@@ -108,7 +111,7 @@ def training(n_episodes=500)
 
 
 
-#training()
+training(200)
 
 
 
