@@ -48,6 +48,7 @@ def training(n_episodes=500):
 
     score_list = []   # Score is NOT the discounted reward but the final 'Banana Score' of the game
     score_trailing_list = deque(maxlen=100)
+    score_trailing_avg_list = []
 
     for episode in range(n_episodes):
         ticks = 0
@@ -111,7 +112,7 @@ def training(n_episodes=500):
 
 
 
-training(200)
+training(2000)
 
 
 
