@@ -38,7 +38,7 @@ agent = TorchAgent(buffer_size=100000, batch_size=64, action_size=4, gamma=0.99)
 #  Main learning loop:
 ####################################
 
-#agent.load_weights("./checkpoints")
+#agent.load_weights("./checkpoints_torch")
 
 def training(n_episodes=500):
     eps = 1.
@@ -98,7 +98,7 @@ def training(n_episodes=500):
         print("Time consumed: {:.2f} s".format(end-start))
         print("***********************************************")
 
-        if score_trailing_avg >= 13.0:
+        if score_trailing_avg > 13.0:
             print("===============================================")
             print("Challenge solved at episode {}".format(episode))
             print("===============================================")
